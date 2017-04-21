@@ -2,8 +2,11 @@ Django app for integrating WepPay payment flow into an oscar e-commerce framewor
 =========================
 
 
-This django app provides the necessary views and functionality for integrate a WSDL WebPay payment service into a
-django-oscar based site.
+This django app provides the necessary views and functionality for integrate a WSDL WebPay payment service into adjango-oscar based site.
+
+
+Settings
+--------
 
 In order to use this you must provide some configurations, you can setup the methods you want to use, the methods are:
 **NORMAL**, **NORMAL_MALL**, **CAPTURE** or **ONECLICK**.
@@ -36,6 +39,19 @@ WEBPAY_NORMAL = {
 }
 
 ```
+
+Redirecting to **WebpayPaymentDetailsView**
+------------------------------------------
+
+Add the following:
+
+```python
+ if payment_method.lower() == 'webpay':
+        return redirect('webpay-payment')
+```
+
+to the `PaymentDetailsView.get` method.
+
 
 Modifying dependencies
 ----------------------

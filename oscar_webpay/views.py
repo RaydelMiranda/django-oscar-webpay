@@ -18,6 +18,8 @@ from oscar.core.loading import get_class, get_model
 from oscar_webpay.gateway import get_webpay_client, confirm_transaction
 from oscar.apps.payment.exceptions import RedirectRequired
 
+import decimal
+
 # Load views dynamically
 PaymentDetailsView = get_class('checkout.views', 'PaymentDetailsView')
 CheckoutSessionMixin = get_class('checkout.session', 'CheckoutSessionMixin')
@@ -50,13 +52,22 @@ class WebPayPaymentDetailsView(PaymentDetailsView):
     def get_context_data(self, **kwargs):
         ctx = super(WebPayPaymentDetailsView, self).get_context_data(**kwargs)
         try:
+
             basket = self.build_submission()['basket']
-            transaction = get_webpay_client(basket.pk, basket.total_incl_tax)
+            total = basket.total_incl_tax
+            try:
+                # Some customizations use shipping charge.
+                total = basket.total_incl_tax + decimal.Decimal(ctx['shipping_charge'].incl_tax)
+            except AttributeError:
+                pass
+
+            transaction = get_webpay_client(basket.pk, total)
+
             ctx['payment_url'] = transaction['url']
             ctx['token_ws'] = transaction['token']
             ctx['payment_method_webpay'] = True
 
-            self.request.session['total'] = basket.total_incl_tax
+            self.request.session['total'] = total
             self.request.session['order_number'] = basket.pk
             self.request.session['payment_url'] = ctx['payment_url']
             self.request.session['token'] = ctx['token_ws']
