@@ -4,7 +4,7 @@ from os import path
 
 here = path.abspath(path.dirname(__file__))
 
-with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
+with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
@@ -52,7 +52,7 @@ setup(
 
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
-    packages=['certificates', 'libwebpay'],
+    packages=['oscar_webpay', 'oscar_webpay.certificates', 'oscar_webpay.libwebpay'],
 
-    install_requires=['suds-0.4', 'py-wsse-0.1'],
+    install_requires=['suds==0.4', 'py-wsse==0.1'],
 )

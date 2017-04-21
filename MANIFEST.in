@@ -1,2 +1,3 @@
-templates/webpay_preview.html
-README.md
+oscar_webpay/templates/webpay_preview.html
+oscar_webpay/README.md
+requirements.txt
