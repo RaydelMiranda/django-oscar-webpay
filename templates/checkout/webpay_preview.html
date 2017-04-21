@@ -1,0 +1,43 @@
+{% extends "checkout/preview.html" %}
+{% load i18n %}
+{% load static %}
+
+{% block place_order %}
+    <div class="row">
+        <div class="col-xs-12">
+            <form method="post" action="{{ payment_url }}" id="place_order_form">
+                {% csrf_token %}
+                {% comment %}
+                    When submitting sensitive data on the payment details page (eg a bankcard)
+                    we don't want to save the data and so we pass the bound form to the preview
+                    template and render it in a hidden div.  Then the payment information will
+                    get re-submitted when the user confirms the order.
+                {% endcomment %}
+                {% block hiddenforms %}
+                    <input type="hidden" name="token_ws" value="{{ token_ws }}" />
+                {% endblock %}
+
+                <div class="form-group text-center">
+                    <br/>
+                    <button id='place-order' type="submit"
+                            class="btn btn-lg btn-danger btn-send-order"
+                            data-loading-text="{% trans 'Submitting...' %}">{% trans "Enviar mi Orden" %}</button>
+                </div>
+                <div class="form-group text-center">
+                    <hr class="strong"/>
+                    <p class="small no-marging">Por favor lea nuestros <a target="_blank" class="strong-link" href="https://www.villaflores.cl/terminos/">términos y condiciones.</a></p>
+                    <p class="small">Al realizar su compra, asumimos que Ud. los entiende y acepta.</p>
+                </div>
+                <div class="col-sm-12">
+                    <p class="text-center small no-marging no-padding">Así se paga en Florería Villaflores</p>
+                    <img class="img-responsive center-block hidden-xs hidden-sm" src="{% static 'img/medio_pago.png' %}"
+                             alt="Pago con WebPay Plus, Servipag y Transferencia">
+                    <img class="img-responsive center-block hidden-md hidden-lg" src="{% static 'img/medio_pago_1.png' %}"
+                             alt="Pago con WebPay Plus, Servipag y Transferencia">
+                    <img class=" img-responsive center-block hidden-md hidden-lg" src="{% static 'img/medio_pago_2.png' %}"
+                             alt="Pago con WebPay Plus, Servipag y Transferencia">
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
