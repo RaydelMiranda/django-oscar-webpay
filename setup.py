@@ -10,7 +10,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 setup(
     name='django-oscar-webpay',
 
-    version='0.1',
+    version='0.1.1',
 
     description='A sample Python project',
     long_description=long_description,
@@ -33,7 +33,8 @@ setup(
 
         # Indicate who your project is intended for
         'Intended Audience :: Developers',
-        'Topic :: Software Development :: Web Developmant',
+        'Topic :: Software Development',
+        'Environment :: Web Environment',
 
         # Pick your license as you wish (should match "license" above)
         'License :: OSI Approved :: MIT License',
