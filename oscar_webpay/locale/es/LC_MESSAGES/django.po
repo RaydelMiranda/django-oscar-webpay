@@ -1,0 +1,47 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-04-24 16:00-0400\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: libwebpay/webpay_capture.py:42 libwebpay/webpay_complete.py:42
+#: libwebpay/webpay_mall_normal.py:41 libwebpay/webpay_normal.py:41
+#: libwebpay/webpay_nullify.py:40 libwebpay/webpay_oneclick.py:42
+msgid "You must provide the ENVIRONMENTS variable for the settings"
+msgstr "Debe configurar la variable 'ENVIRONMENTS' en la configuración"
+
+#: oscar_webpay_settings.py:36
+msgid ""
+"You must set the configuration for all the enabled webpay modes\n"
+"Please configure WEBPAY_{} setting's variable."
+msgstr "Por favor, proporcione la configuración para la variable WEBPAY_{}."
+
+#: oscar_webpay_settings.py:45
+msgid "WEBPAY_{} \"{}\" setting has not been set."
+msgstr "La variable para WEBPAY_{}: \"{}\" no ha sido configurada."
+
+#: oscar_webpay_settings.py:47
+msgid "Oscar webpay do not support this mode: {}"
+msgstr "Oscar webpay no soporta el modo: {}"
+
+#: views.py:83
+msgid "A problem occurred communicating with WebPay - please try again later"
+msgstr "Ha ocurrido un problema de comunicación con WebPay, por favor trate de nuevo más tarde."
+
+#: views.py:125
+msgid "Confirmed"
+msgstr "Confirmado"

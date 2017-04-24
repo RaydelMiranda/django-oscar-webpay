@@ -1,3 +1,4 @@
-oscar_webpay/templates/webpay_preview.html
-oscar_webpay/README.md
-requirements.txt
+recursive-include oscar_webpay/templates/ *
+recursive-include oscar_webpay/locale/ *.mo
+include oscar_webpay/README.md
+include requirements.txt

@@ -4,6 +4,8 @@ Django app for integrating WepPay payment flow into an oscar e-commerce framewor
 
 This django app provides the necessary views and functionality for integrate a WSDL WebPay payment service into adjango-oscar based site.
 
+> **This package has been only tested against the chilean WebPay service.**
+
 
 Settings
 --------
@@ -12,8 +14,7 @@ In order to use this you must provide some configurations, you can setup the met
 **NORMAL**, **NORMAL_MALL**, **CAPTURE** or **ONECLICK**.
 
 
-```
-python
+```python
 # Configuration example
 WEBPAY_RETURN_IP_ADDRESS = '127.0.0.1'              # Ip address of the host hosting the e-commerce site.
 WEBPAY_RETURN_PORT = 8000                           # Port where the server is listening for?
@@ -59,4 +60,5 @@ Modifying dependencies
 If you are experiencing some problems getting this to work properly, try to modify some dependencies according to this:
 
 http://www.transbankdevelopers.cl/?m=api
+
 

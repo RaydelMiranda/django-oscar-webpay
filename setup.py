@@ -4,13 +4,19 @@ from os import path
 
 here = path.abspath(path.dirname(__file__))
 
-with open(path.join(here, 'README.md'), encoding='utf-8') as f:
-    long_description = f.read()
+
+long_description = ''
+
+try:
+    import pypandoc
+    long_description = pypandoc.convert('README.md', 'rst')
+except(IOError, ImportError):
+    long_description = ''
 
 setup(
     name='django-oscar-webpay',
 
-    version='0.1.3',
+    version='0.1.5-r3',
 
     description='A sample Python project',
     long_description=long_description,
@@ -23,7 +29,7 @@ setup(
     author_email='raydel.miranda.gomez@gmail.com',
 
     license='LGPL',
-
+    data_files=[('', ['README.md'])],
     classifiers=[
         # How mature is this project? Common values are
         #   3 - Alpha
