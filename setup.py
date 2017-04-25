@@ -1,5 +1,4 @@
-from setuptools import setup, find_packages
-from codecs import open
+from setuptools import setup
 from os import path
 
 here = path.abspath(path.dirname(__file__))
@@ -16,9 +15,9 @@ except(IOError, ImportError):
 setup(
     name='django-oscar-webpay',
 
-    version='0.1.5-r3',
+    version='0.1.6',
 
-    description='A sample Python project',
+    description='An application for intagrating WebPay with oscar based e-commerce sites',
     long_description=long_description,
 
     # The project's main homepage.
@@ -35,7 +34,7 @@ setup(
         #   3 - Alpha
         #   4 - Beta
         #   5 - Production/Stable
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
 
         # Indicate who your project is intended for
         'Intended Audience :: Developers',

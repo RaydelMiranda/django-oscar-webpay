@@ -103,26 +103,50 @@ class WebPayPaymentDetailsView(PaymentDetailsView):
         if hasattr(self, 'token'):
             # Execute this only when not in preview mode.
             submission['payment_kwargs']['token'] = self.token
+            # Set the initial state of payment to In process':
+            submission['order_kwargs']['status'] = _("In progress ...")
         return submission
 
     def submit(self, **submission):
         return super(WebPayPaymentDetailsView, self).submit(**submission)
 
+    def handle_order_placement(self, order_number, user, basket, shipping_address, shipping_method,
+                shipping_charge, billing_address, order_total, **order_kwargs):
+        order_kwargs.update({'status': _('Completed')})
+        return super(WebPayPaymentDetailsView, self).handle_order_placement(
+            order_number, user, basket, shipping_address, shipping_method,
+            shipping_charge, billing_address, order_total, **order_kwargs
+        )
+
     def handle_payment(self, order_number, total, **kwargs):
         try:
-            confirm_transaction(kwargs['token'])
+            result = confirm_transaction(kwargs['token'])
         except Exception as wpe:
             messages.error(wpe)
-            RedirectRequired(reverse('basket:summary'))
-        source_type, is_created = SourceType.objects.get_or_create(
-            name='WebPay')
-        source = Source(
-            source_type=source_type,
-            currency=total.currency,
-            amount_allocated=total.incl_tax,
-        )
-        self.add_payment_source(source)
-        self.add_payment_event(_('Confirmed'), total.incl_tax)
+            raise RedirectRequired(reverse('basket:summary'))
+        else:
+            # order = Order.objects.get(number=order_number)
+            source_type, is_created = SourceType.objects.get_or_create(
+                name='WebPay')
+            source = Source(
+                source_type=source_type,
+                currency=total.currency,
+                amount_allocated=total.incl_tax,
+            )
+            respCode = result.detailOutput[0]['responseCode']
+            if ((result['VCI'] == 'TSY' or result['VCI'] == '') and respCode == 0):
+                self.add_payment_source(source)
+                self.add_payment_event(_('Accepted'), total.incl_tax)
+                # order.status = _('Completed')
+                # order.save()
+            else:
+                print "Pago Rechazado por webpay"
+                self.add_payment_source(source)
+                self.add_payment_event(_('Rejected'), total.incl_tax)
+                # order.status = _('Payment rejected by WebPay')
+                messages.error(self.request, order.status)
+                # order.save()
+                raise RedirectRequired(reverse('basket:summary'))
 
 
 class WebPaySuccessView(TemplateView):

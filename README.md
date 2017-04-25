@@ -7,6 +7,23 @@ This django app provides the necessary views and functionality for integrate a W
 > **This package has been only tested against the chilean WebPay service.**
 
 
+> **Important notes about payment flow**
+>
+> *Operation InitTransaction:* Initializes a transaction in Webpay. In response to the invocation, a 
+> Token is generated, which uniquely represents a transaction. It is important to consider that once this method 
+> is invoked, the delivered Token has a reduced life span of **5 minutes**, after which the Token 
+> is expired and can not be used in a payment.
+>
+> *Operation getTransactionResult:* Corresponds to the operation after the init Transaction. Allows you to obtain
+> the result of the transaction once Webpay has resolved your financial authorization
+> 
+> *Operation acknowledgeTransaction:* If the invocation is not performed within 30 seconds
+> (regardless of the result delivered by the getTransactionResult method), Webpay will reverse the transaction, assuming
+> that the trade was unable to report its result, thus preventing cardholder payment.
+>
+> [Reference](http://www.transbankdevelopers.cl/?m=api "Tbk. Developers")
+
+
 Settings
 --------
 

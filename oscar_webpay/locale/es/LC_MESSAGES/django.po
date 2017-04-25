@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-04-24 16:00-0400\n"
+"POT-Creation-Date: 2017-04-25 11:39-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -28,7 +28,9 @@ msgstr "Debe configurar la variable 'ENVIRONMENTS' en la configuración"
 msgid ""
 "You must set the configuration for all the enabled webpay modes\n"
 "Please configure WEBPAY_{} setting's variable."
-msgstr "Por favor, proporcione la configuración para la variable WEBPAY_{}."
+msgstr ""
+"Debe inicializar la configuración para todos los modos de pago habilitados de WebPay\n"
+"Por favor, proporcione la configuración para la variable WEBPAY_{}."
 
 #: oscar_webpay_settings.py:45
 msgid "WEBPAY_{} \"{}\" setting has not been set."
@@ -40,8 +42,27 @@ msgstr "Oscar webpay no soporta el modo: {}"
 
 #: views.py:83
 msgid "A problem occurred communicating with WebPay - please try again later"
-msgstr "Ha ocurrido un problema de comunicación con WebPay, por favor trate de nuevo más tarde."
+msgstr ""
+"Ha ocurrido un problema comunicando con WebPay, por favor trate de nuevo más "
+"tarde."
 
-#: views.py:125
-msgid "Confirmed"
-msgstr "Confirmado"
+#: views.py:107
+#, fuzzy
+#| msgid "In process ..."
+msgid "In progress ..."
+msgstr "En progeso ..."
+
+#: views.py:115
+msgid "Completed"
+msgstr "Completado"
+
+#: views.py:139
+msgid "Accepted"
+msgstr "Acceptado"
+
+#: views.py:145
+msgid "Rejected"
+msgstr "Rechazado"
+
+#~ msgid "Confirmed"
+#~ msgstr "Confirmado"
