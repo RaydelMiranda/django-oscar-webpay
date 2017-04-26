@@ -1,10 +1,12 @@
 #! -*- coding: utf-8 -*-
 from constance import config
+import datetime
 
 from django.http import Http404
 from django.http import HttpResponseRedirect
 
 from django.shortcuts import redirect, render
+from django.utils import six
 from django.utils.translation import ugettext_lazy as _
 from django.utils.translation import ugettext
 from django.contrib import messages
@@ -14,10 +16,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import View, RedirectView, TemplateView, DetailView
 from django.core.urlresolvers import reverse
 
-from oscar.core.loading import get_class, get_model
-# from oscar.apps.payment.exceptions import RedirectRequired
+from oscar.core.loading import get_class, get_model, get_classes
 from oscar_webpay.gateway import get_webpay_client, confirm_transaction
-from oscar.apps.payment.exceptions import RedirectRequired
 
 import decimal
 
@@ -32,6 +32,11 @@ Order = get_model('order', 'Order')
 Basket = get_model('basket', 'Basket')
 
 OrderCreator = get_class('order.utils', 'OrderCreator')
+
+RedirectRequired, UnableToTakePayment, PaymentError \
+    = get_classes('payment.exceptions', ['RedirectRequired',
+                                         'UnableToTakePayment',
+                                         'PaymentError'])
 
 
 class WebPayRedirect(CheckoutSessionMixin, RedirectView):
@@ -108,6 +113,10 @@ class WebPayPaymentDetailsView(PaymentDetailsView):
             # Set the initial state of payment to In process':
             # TODO: Make correct translation here.
             submission['order_kwargs']['status'] = _(u"Pendiente confirmación")
+            submission['order_kwargs']['client_desired_dispatch_date'] = dispath_date = datetime.datetime.strptime(
+                self.checkout_session.get_shipping_date(), "%d/%m/%Y"
+            ).date()
+            submission["order_kwargs"]["client_desired_dispatch_time"] = self.checkout_session.get_shipping_time()
         return submission
 
     def submit(self, **submission):
@@ -115,35 +124,33 @@ class WebPayPaymentDetailsView(PaymentDetailsView):
 
     def handle_order_placement(self, order_number, user, basket, shipping_address, shipping_method,
                                shipping_charge, billing_address, order_total, **order_kwargs):
-        # TODO: Make correct translation here.
-        order_kwargs.update({'status': _(u'Pago confirmado')})
-        return super(WebPayPaymentDetailsView, self).handle_order_placement(
-            order_number, user, basket, shipping_address, shipping_method,
-            shipping_charge, billing_address, order_total, **order_kwargs
-        )
+
+        # This is really a crap!!  But I'm working right now on top
+        # of a legacy work and the time line is short. I swear I'll be
+        # comback to this code latter!!!!
+        order_kwargs.update({'status': self.order_status})
+        if self.order_status_value == 1:
+            order = self.place_order(
+                order_number=order_number, user=user, basket=basket,
+                shipping_address=shipping_address, shipping_method=shipping_method,
+                shipping_charge=shipping_charge, order_total=order_total,
+                billing_address=billing_address, **order_kwargs)
+            self.handle_successful_order(order)
+            return redirect("basket:summary")
+        else:
+            return super(WebPayPaymentDetailsView, self).handle_order_placement(
+                order_number, user, basket, shipping_address, shipping_method,
+                shipping_charge, billing_address, order_total, **order_kwargs
+            )
+
 
     def handle_payment(self, order_number, total, **kwargs):
         try:
             result = confirm_transaction(kwargs['token'])
         except Exception as wpe:
-            messages.error(wpe)
-
-            basket = Basket.objcts.get(pk=self.session['order_number'])
-            shipping_charge = self.request.session['shipping_charge']
-            total = self.request.session['total']
-
-            # TODO: Translate this correctly.
-            self.place_order(
-                order_number=order_number, user=self.request.user, basket=basket,
-                shipping_address=self.get_shipping_addres(), shipping_method=self.get_shipping_method(),
-                shipping_charge=shipping_charge, order_total=total,
-                billing_address=self.get_billing_address(), **kwargs)
-
-            raise RedirectRequired(reverse('catalogue:index'))
+            raise PaymentError(six.text_type(wpe))
         else:
-            # order = Order.objects.get(number=order_number)
-            source_type, is_created = SourceType.objects.get_or_create(
-                name='WebPay')
+            source_type, is_created = SourceType.objects.get_or_create(name='WebPay')
             source = Source(
                 source_type=source_type,
                 currency=total.currency,
@@ -152,11 +159,16 @@ class WebPayPaymentDetailsView(PaymentDetailsView):
             respCode = result.detailOutput[0]['responseCode']
             if (result['VCI'] == 'TSY' or result['VCI'] == '') and respCode == 0:
                 self.add_payment_source(source)
-                self.add_payment_event(_('Accepted'), total.incl_tax)
+                self.add_payment_event(_(u'Pago confirmado'), total.incl_tax)
+                self.order_status = _(u'Pago confirmado')
+                self.order_status_value = 0
             else:
                 self.add_payment_source(source)
-                self.add_payment_event(_('Rejected'), total.incl_tax)
-                raise RedirectRequired(reverse('basket:summary'))
+                self.add_payment_event(_(u'Pendiente confirmación'), total.incl_tax)
+                self.order_status = _(u'Pendiente confirmación')
+                self.order_status_value = 1
+
+            return None
 
 @method_decorator(csrf_exempt, name='dispatch')
 class WebPaySuccessView(TemplateView):
@@ -197,7 +209,7 @@ class WebPaySuccessView(TemplateView):
 @method_decorator(csrf_exempt, name='dispatch')
 class WebPayCancel(View):
     def post(self, request, *args, **kwargs):
-        return redirect('catalogue:index')
+        return redirect('basket:summary')
 
 @method_decorator(csrf_exempt, name='dispatch')
 class WebPayFail(View):
