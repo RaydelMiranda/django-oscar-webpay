@@ -6,6 +6,7 @@ from django.http import HttpResponseRedirect
 
 from django.shortcuts import redirect, render
 from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext
 from django.contrib import messages
 from django.template import RequestContext
 from django.utils.decorators import method_decorator
@@ -28,11 +29,12 @@ Selector = get_class('partner.strategy', 'Selector')
 SourceType = get_model('payment', 'SourceType')
 Source = get_model('payment', 'Source')
 Order = get_model('order', 'Order')
+Basket = get_model('basket', 'Basket')
 
+OrderCreator = get_class('order.utils', 'OrderCreator')
 
 
 class WebPayRedirect(CheckoutSessionMixin, RedirectView):
-
     as_payment_method = False
 
     def get_redirect_url(self, *args, **kwargs):
@@ -41,7 +43,6 @@ class WebPayRedirect(CheckoutSessionMixin, RedirectView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class WebPayPaymentDetailsView(PaymentDetailsView):
-
     template_name = 'checkout/payment_details.html'
     # We use a specific template here because we inject the
     # WebPay url for the transaction to the form action attribute.
@@ -71,6 +72,7 @@ class WebPayPaymentDetailsView(PaymentDetailsView):
             self.request.session['order_number'] = basket.pk
             self.request.session['payment_url'] = ctx['payment_url']
             self.request.session['token'] = ctx['token_ws']
+            self.request.session['shipping_charge'] = ctx['shipping_charge'].incl_tax
 
             pass
         except Exception as wpe:
@@ -104,15 +106,17 @@ class WebPayPaymentDetailsView(PaymentDetailsView):
             # Execute this only when not in preview mode.
             submission['payment_kwargs']['token'] = self.token
             # Set the initial state of payment to In process':
-            submission['order_kwargs']['status'] = _("In progress ...")
+            # TODO: Make correct translation here.
+            submission['order_kwargs']['status'] = _(u"Pendiente confirmación")
         return submission
 
     def submit(self, **submission):
         return super(WebPayPaymentDetailsView, self).submit(**submission)
 
     def handle_order_placement(self, order_number, user, basket, shipping_address, shipping_method,
-                shipping_charge, billing_address, order_total, **order_kwargs):
-        order_kwargs.update({'status': _('Completed')})
+                               shipping_charge, billing_address, order_total, **order_kwargs):
+        # TODO: Make correct translation here.
+        order_kwargs.update({'status': _(u'Pago confirmado')})
         return super(WebPayPaymentDetailsView, self).handle_order_placement(
             order_number, user, basket, shipping_address, shipping_method,
             shipping_charge, billing_address, order_total, **order_kwargs
@@ -123,7 +127,19 @@ class WebPayPaymentDetailsView(PaymentDetailsView):
             result = confirm_transaction(kwargs['token'])
         except Exception as wpe:
             messages.error(wpe)
-            raise RedirectRequired(reverse('basket:summary'))
+
+            basket = Basket.objcts.get(pk=self.session['order_number'])
+            shipping_charge = self.request.session['shipping_charge']
+            total = self.request.session['total']
+
+            # TODO: Translate this correctly.
+            self.place_order(
+                order_number=order_number, user=self.request.user, basket=basket,
+                shipping_address=self.get_shipping_addres(), shipping_method=self.get_shipping_method(),
+                shipping_charge=shipping_charge, order_total=total,
+                billing_address=self.get_billing_address(), **kwargs)
+
+            raise RedirectRequired(reverse('catalogue:index'))
         else:
             # order = Order.objects.get(number=order_number)
             source_type, is_created = SourceType.objects.get_or_create(
@@ -134,21 +150,15 @@ class WebPayPaymentDetailsView(PaymentDetailsView):
                 amount_allocated=total.incl_tax,
             )
             respCode = result.detailOutput[0]['responseCode']
-            if ((result['VCI'] == 'TSY' or result['VCI'] == '') and respCode == 0):
+            if (result['VCI'] == 'TSY' or result['VCI'] == '') and respCode == 0:
                 self.add_payment_source(source)
                 self.add_payment_event(_('Accepted'), total.incl_tax)
-                # order.status = _('Completed')
-                # order.save()
             else:
-                print "Pago Rechazado por webpay"
                 self.add_payment_source(source)
                 self.add_payment_event(_('Rejected'), total.incl_tax)
-                # order.status = _('Payment rejected by WebPay')
-                messages.error(self.request, order.status)
-                # order.save()
                 raise RedirectRequired(reverse('basket:summary'))
 
-
+@method_decorator(csrf_exempt, name='dispatch')
 class WebPaySuccessView(TemplateView):
     template_name = "checkout/payment_success.html"
 
@@ -184,12 +194,12 @@ class WebPaySuccessView(TemplateView):
 
         return ctx
 
-
+@method_decorator(csrf_exempt, name='dispatch')
 class WebPayCancel(View):
-    def get(self, request, *args, **kwargs):
-        return redirect('webpay-details')
+    def post(self, request, *args, **kwargs):
+        return redirect('catalogue:index')
 
-
+@method_decorator(csrf_exempt, name='dispatch')
 class WebPayFail(View):
     template_name = "checkout/payment_fail.html"
 

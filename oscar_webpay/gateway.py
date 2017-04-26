@@ -28,7 +28,7 @@ def get_webpay_client(order_number, total):
     final_url = 'http://{}:{}{}'.format(
         oscar_webpay_settings.WEBPAY_RETURN_IP_ADDRESS,
         oscar_webpay_settings.WEBPAY_RETURN_PORT,
-        reverse('webpay-fail')
+        reverse('webpay-cancel')
     )
 
     return_url = 'http://{}:{}{}'.format(

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-04-25 11:39-0400\n"
+"POT-Creation-Date: 2017-04-25 14:42-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -29,7 +29,8 @@ msgid ""
 "You must set the configuration for all the enabled webpay modes\n"
 "Please configure WEBPAY_{} setting's variable."
 msgstr ""
-"Debe inicializar la configuración para todos los modos de pago habilitados de WebPay\n"
+"Debe inicializar la configuración para todos los modos de pago habilitados "
+"de WebPay\n"
 "Por favor, proporcione la configuración para la variable WEBPAY_{}."
 
 #: oscar_webpay_settings.py:45
@@ -40,29 +41,24 @@ msgstr "La variable para WEBPAY_{}: \"{}\" no ha sido configurada."
 msgid "Oscar webpay do not support this mode: {}"
 msgstr "Oscar webpay no soporta el modo: {}"
 
-#: views.py:83
+#: views.py:81
 msgid "A problem occurred communicating with WebPay - please try again later"
 msgstr ""
 "Ha ocurrido un problema comunicando con WebPay, por favor trate de nuevo más "
 "tarde."
 
-#: views.py:107
-#, fuzzy
-#| msgid "In process ..."
-msgid "In progress ..."
-msgstr "En progeso ..."
+#: views.py:106 views.py:107
+msgid "Pending confirmation"
+msgstr "Pendiente confirmación"
 
-#: views.py:115
-msgid "Completed"
-msgstr "Completado"
+#: views.py:116
+msgid "Confirmed Payment"
+msgstr "Pago confirmado"
 
-#: views.py:139
+#: views.py:140
 msgid "Accepted"
 msgstr "Acceptado"
 
-#: views.py:145
+#: views.py:143
 msgid "Rejected"
 msgstr "Rechazado"
-
-#~ msgid "Confirmed"
-#~ msgstr "Confirmado"

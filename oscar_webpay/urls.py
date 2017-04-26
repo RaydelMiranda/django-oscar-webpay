@@ -9,5 +9,5 @@ urlpatterns = patterns(
     url(r'^webpay_fail/$', views.WebPayFail.as_view(), name='webpay-fail'),
     url(r'^webpay_cancel/$', views.WebPayCancel.as_view(), name='webpay-cancel'),
     url(r'^webpay_thanks/$', views.WebPayThankYouView.as_view(), name='webpay-tnx'),
-    url(r'^webpay_thanks/$', views.WebPaySuccessView.as_view(), name='webpay-tnx'),
+    url(r'^webpay_thanks/$', views.WebPaySuccessView.as_view(), name='webpay-success'),
 )
