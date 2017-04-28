@@ -110,6 +110,7 @@ class WebPayPaymentDetailsView(PaymentDetailsView):
             return HttpResponseRedirect(reverse('basket:summary'))
 
         submission = self.build_submission(**kwargs)
+        self.request.session['total'] = submission["order_total"]
 
         if not self.payment_mode:
             basket = kwargs.get('basket', self.request.basket)
@@ -128,14 +129,30 @@ class WebPayPaymentDetailsView(PaymentDetailsView):
             order_number = self.generate_order_number(basket)
 
             try:
-                Order.objects.get(number=order_number)
+                order = Order.objects.get(number=order_number)
             except Order.DoesNotExist:
-                self.place_order(
+                # Place the order.
+                order = self.place_order(
                     order_number=order_number, user=request.user, basket=basket,
-                    shipping_address=shipping_address, shipping_method=shipping_method,
-                    shipping_charge=shipping_charge, order_total=total,
-                    billing_address=billing_address, **(submission['order_kwargs'])
+                    shipping_address=shipping_address,
+                    shipping_method=shipping_method,
+                    shipping_charge=shipping_charge,
+                    order_total=total,
+                    billing_address=billing_address,
+                    **(submission['order_kwargs'])
                 )
+            finally:
+                # Add Payment envents.
+                source_type, is_created = SourceType.objects.get_or_create(name='WebPay')
+                source = Source(
+                    source_type=source_type,
+                    currency=submission["order_total"].currency,
+                    amount_allocated=submission["order_total"].incl_tax,
+                )
+
+                self.add_payment_source(source)
+                self.add_payment_event(_(u'Pendiente confirmación'), submission["order_total"].incl_tax)
+                self.save_payment_details(order)
 
             return redirect('webpay-form')
         return self.submit(**submission)
@@ -185,24 +202,25 @@ class WebPayPaymentDetailsView(PaymentDetailsView):
             source_type, is_created = SourceType.objects.get_or_create(name='WebPay')
             source = Source(
                 source_type=source_type,
-                currency=total.currency,
-                amount_allocated=total.incl_tax,
+                currency=tself.request.session['total'].currency,
+                amount_allocated=self.request.session['total'].incl_tax,
             )
             respCode = result.detailOutput[0]['responseCode']
             if (result['VCI'] == 'TSY' or result['VCI'] == '') and respCode == 0:
+                source.ammount_debited = total.incl_tax
                 self.add_payment_source(source)
                 self.add_payment_event(_(u'Pago confirmado'), total.incl_tax)
-                self.order_status = _(u'Pago confirmado')
                 order = Order.objects.get(number=order_number)
                 order.status = _(u'Pago confirmado')
                 order.save()
-                self.order_status_value = 0
+                self.save_payment_details(order)
+                # self.order_status_value = 0
             else:
-                self.add_payment_source(source)
-                self.add_payment_event(_(u'Pendiente confirmación'), total.incl_tax)
-                self.order_status = _(u'Pendiente confirmación')
-                self.order_status_value = 1
-
+                messages.error(
+                    self.requets,
+                   _(u"No se ha podido realizar el pago con WebPay, por favor trate mas tarde")
+                )
+                # self.order_status_value = 1
             return None
 
 @method_decorator(csrf_exempt, name='dispatch')
