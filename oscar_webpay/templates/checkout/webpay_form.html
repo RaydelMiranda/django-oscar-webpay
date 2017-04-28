@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pago WebPay</title>
+</head>
+<body onload="submit()">
+<form action="{{ payment_url }}">
+    <input type="hidden" name="token_ws" value="{{ token_ws }}" />
+</form>
+<script>
+    var submit = function () {
+       var forms = document.getElementsByTagName('form');
+       forms[0].submit();
+    };
+</script>
+</body>
+</html>

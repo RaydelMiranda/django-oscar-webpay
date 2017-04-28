@@ -167,22 +167,13 @@ class WebPayPaymentDetailsView(PaymentDetailsView):
         # This is really a crap!!  But I'm working right now on top
         # of a legacy work and the time line is short. I swear I'll be
         # comback to this code latter!!!!
-        order_kwargs.update({'status': self.order_status})
+        order = Order.objects.get(number=order_number)
+        self.save_payment_details(order)
         if self.order_status_value == 1:
-            order = self.place_order(
-                order_number=order_number, user=user, basket=basket,
-                shipping_address=shipping_address, shipping_method=shipping_method,
-                shipping_charge=shipping_charge, order_total=order_total,
-                billing_address=billing_address, **order_kwargs)
-            self.handle_successful_order(order)
+            # Some thing was wrong with payment.
             return redirect("basket:summary")
         else:
-            order = Order.objects.get(number=order_number)
             return self.handle_successful_order(order)
-            # return super(WebPayPaymentDetailsView, self).handle_order_placement(
-            #     order_number, user, basket, shipping_address, shipping_method,
-            #     shipping_charge, billing_address, order_total, **order_kwargs
-            # )
 
 
     def handle_payment(self, order_number, total, **kwargs):
