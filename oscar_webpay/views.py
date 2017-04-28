@@ -46,14 +46,25 @@ class WebPayRedirect(CheckoutSessionMixin, RedirectView):
         return reverse('webpay-details')
 
 
+class WebPayForm(TemplateView):
+    template_name = 'checkout/webpay_form.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super(WebPayForm, self).get_context_data(**kwargs)
+        ctx.update({
+            'payment_url': self.request.session['payment_url'],
+            'token_ws': self.request.session['token']
+        })
+        return ctx
+
+
 @method_decorator(csrf_exempt, name='dispatch')
 class WebPayPaymentDetailsView(PaymentDetailsView):
     template_name = 'checkout/payment_details.html'
-    # We use a specific template here because we inject the
-    # WebPay url for the transaction to the form action attribute.
     template_name_preview = 'checkout/webpay_preview.html'
 
     preview = True
+    payment_mode = False
 
     def get_context_data(self, **kwargs):
         ctx = super(WebPayPaymentDetailsView, self).get_context_data(**kwargs)
@@ -69,13 +80,13 @@ class WebPayPaymentDetailsView(PaymentDetailsView):
 
             transaction = get_webpay_client(basket.pk, total)
 
-            ctx['payment_url'] = transaction['url']
+            ctx['payment_url'] = reverse('webpay-details')
             ctx['token_ws'] = transaction['token']
             ctx['payment_method_webpay'] = True
 
             self.request.session['total'] = total
             self.request.session['order_number'] = basket.pk
-            self.request.session['payment_url'] = ctx['payment_url']
+            self.request.session['payment_url'] = transaction['url']
             self.request.session['token'] = ctx['token_ws']
             self.request.session['shipping_charge'] = ctx['shipping_charge'].incl_tax
 
@@ -99,6 +110,34 @@ class WebPayPaymentDetailsView(PaymentDetailsView):
             return HttpResponseRedirect(reverse('basket:summary'))
 
         submission = self.build_submission(**kwargs)
+
+        if not self.payment_mode:
+            basket = kwargs.get('basket', self.request.basket)
+            shipping_address = self.get_shipping_address(basket)
+            shipping_method = self.get_shipping_method(
+                basket, shipping_address)
+            billing_address = self.get_billing_address(shipping_address)
+
+
+            if not shipping_method:
+                total = shipping_charge = None
+            else:
+                shipping_charge = shipping_method.calculate(basket)
+                total = self.get_order_totals(
+                    basket, shipping_charge=shipping_charge)
+            order_number = self.generate_order_number(basket)
+
+            try:
+                Order.objects.get(number=order_number)
+            except Order.DoesNotExist:
+                self.place_order(
+                    order_number=order_number, user=request.user, basket=basket,
+                    shipping_address=shipping_address, shipping_method=shipping_method,
+                    shipping_charge=shipping_charge, order_total=total,
+                    billing_address=billing_address, **(submission['order_kwargs'])
+                )
+
+            return redirect('webpay-form')
         return self.submit(**submission)
 
     def get(self, request):
@@ -138,10 +177,12 @@ class WebPayPaymentDetailsView(PaymentDetailsView):
             self.handle_successful_order(order)
             return redirect("basket:summary")
         else:
-            return super(WebPayPaymentDetailsView, self).handle_order_placement(
-                order_number, user, basket, shipping_address, shipping_method,
-                shipping_charge, billing_address, order_total, **order_kwargs
-            )
+            order = Order.objects.get(number=order_number)
+            return self.handle_successful_order(order)
+            # return super(WebPayPaymentDetailsView, self).handle_order_placement(
+            #     order_number, user, basket, shipping_address, shipping_method,
+            #     shipping_charge, billing_address, order_total, **order_kwargs
+            # )
 
 
     def handle_payment(self, order_number, total, **kwargs):
@@ -161,6 +202,9 @@ class WebPayPaymentDetailsView(PaymentDetailsView):
                 self.add_payment_source(source)
                 self.add_payment_event(_(u'Pago confirmado'), total.incl_tax)
                 self.order_status = _(u'Pago confirmado')
+                order = Order.objects.get(number=order_number)
+                order.status = _(u'Pago confirmado')
+                order.save()
                 self.order_status_value = 0
             else:
                 self.add_payment_source(source)
