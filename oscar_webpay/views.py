@@ -1,6 +1,7 @@
 #! -*- coding: utf-8 -*-
 from constance import config
 import datetime
+import uuid
 
 from django.http import Http404
 from django.http import HttpResponseRedirect
@@ -28,6 +29,7 @@ Selector = get_class('partner.strategy', 'Selector')
 
 SourceType = get_model('payment', 'SourceType')
 Source = get_model('payment', 'Source')
+Transaction = get_model('payment', 'Transaction')
 Order = get_model('order', 'Order')
 Basket = get_model('basket', 'Basket')
 
@@ -144,15 +146,19 @@ class WebPayPaymentDetailsView(PaymentDetailsView):
             finally:
                 # Add Payment envents.
                 source_type, is_created = SourceType.objects.get_or_create(name='WebPay')
+
                 source = Source(
                     source_type=source_type,
                     currency=submission["order_total"].currency,
                     amount_allocated=submission["order_total"].incl_tax,
                 )
 
+
                 self.add_payment_source(source)
                 self.add_payment_event(_(u'Pendiente confirmación'), submission["order_total"].incl_tax)
                 self.save_payment_details(order)
+
+                self.request.session['oscar_webpay_source_id'] = source.id
 
             return redirect('webpay-form')
         return self.submit(**submission)
@@ -185,7 +191,7 @@ class WebPayPaymentDetailsView(PaymentDetailsView):
         # of a legacy work and the time line is short. I swear I'll be
         # comback to this code latter!!!!
         order = Order.objects.get(number=order_number)
-        self.save_payment_details(order)
+        # self.save_payment_details(order)
         if self.order_status_value == 1:
             # Some thing was wrong with payment.
             return redirect("basket:summary")
@@ -200,27 +206,37 @@ class WebPayPaymentDetailsView(PaymentDetailsView):
             raise PaymentError(six.text_type(wpe))
         else:
             source_type, is_created = SourceType.objects.get_or_create(name='WebPay')
-            source = Source(
-                source_type=source_type,
-                currency=tself.request.session['total'].currency,
-                amount_allocated=self.request.session['total'].incl_tax,
-            )
+            # source = Source(
+            #     source_type=source_type,
+            #     currency=self.request.session['total'].currency,
+            #     amount_allocated=self.request.session['total'].incl_tax,
+            # )
             respCode = result.detailOutput[0]['responseCode']
             if (result['VCI'] == 'TSY' or result['VCI'] == '') and respCode == 0:
-                source.ammount_debited = total.incl_tax
+                source = Source.objects.get(id=self.request.session['oscar_webpay_source_id'])
+                source.amount_debited = total.incl_tax
+                source.save()
                 self.add_payment_source(source)
                 self.add_payment_event(_(u'Pago confirmado'), total.incl_tax)
                 order = Order.objects.get(number=order_number)
                 order.status = _(u'Pago confirmado')
                 order.save()
                 self.save_payment_details(order)
-                # self.order_status_value = 0
+                self.order_status_value = 0
+
+                # Creating the transaction for successful payment.
+                Transaction.objects.create(
+                    source=source,
+                    amount=result.detailOutput[0].amount,
+                    status=_(u"pago-confirmado"),
+                    reference=str(uuid.uuid4())
+                )
             else:
                 messages.error(
                     self.requets,
                    _(u"No se ha podido realizar el pago con WebPay, por favor trate mas tarde")
                 )
-                # self.order_status_value = 1
+                self.order_status_value = 1
             return None
 
 @method_decorator(csrf_exempt, name='dispatch')
