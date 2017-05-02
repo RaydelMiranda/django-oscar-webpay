@@ -6,9 +6,11 @@
 {% comment %}
 Overwrite this template at will in roder to met your site's requirements.
 {% endcomment%}
-<form method="post" action="{{ payment_url }}" id="place_order_form">
+<form method="post" action="{% url 'webpay-details' %}" id="place_order_form">
     {% csrf_token %}
+    {{ block.super }}
     {% block hiddenforms %}
+        {{ block.super }}
         <input type="hidden" name="token_ws" value="{{ token_ws }}" />
     {% endblock %}
 </form>

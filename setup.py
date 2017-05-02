@@ -15,7 +15,7 @@ except(IOError, ImportError):
 setup(
     name='django-oscar-webpay',
 
-    version='0.1.10',
+    version='0.1.11',
 
     description='An application for intagrating WebPay with oscar based e-commerce sites',
     long_description=long_description,
@@ -53,7 +53,7 @@ setup(
         'Programming Language :: Python :: 3.5',
     ],
 
-    keywords='development web django webpay',
+    keywords='development web django webpay ecommerce',
 
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().

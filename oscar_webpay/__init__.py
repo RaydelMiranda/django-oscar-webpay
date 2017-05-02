@@ -1,9 +1,22 @@
 import os
-from django.conf import settings
+import logging
+from oscar.defaults import OSCAR_DASHBOARD_NAVIGATION
 
-OSCAR_WEBPAY_TEMPLATES_DIR = os.path.join(
-    os.path.dirname(__file__), 'templates'
+from django.utils.translation import ugettext_lazy as _
+
+
+logger = logging.getLogger('oscar_webpay')
+
+
+OSCAR_DASHBOARD_NAVIGATION += (
+    {
+        'label': _('WebPay'),
+        'icon': 'icon-globe',
+        'children': [
+            {
+                'label': _('WebPay transactions'),
+                'url_name': 'webpay-transaction-list',
+            },
+        ]
+    },
 )
-
-
-settings.LOCALE_PATHS = settings.LOCALE_PATHS + (os.path.join(os.path.dirname(__file__), 'locale/'), )

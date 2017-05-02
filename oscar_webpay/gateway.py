@@ -37,8 +37,8 @@ def get_webpay_client(order_number, total):
         reverse('webpay-details-returns')
     )
 
-    client = webpay.getNormalTransaction().initTransaction(amount, buy_order, session_id, return_url, final_url)
-    return client
+    initTransactionOutput = webpay.getNormalTransaction().initTransaction(amount, buy_order, session_id, return_url, final_url)
+    return initTransactionOutput
 
 
 def confirm_transaction(token):
