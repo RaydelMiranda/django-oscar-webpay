@@ -5,7 +5,11 @@ from oscar_webpay import views
 urlpatterns = patterns(
     '',
     url(r'^webpay_redirect/$', views.WebPayRedirectView.as_view(), name='webpay-redirect'),
-    url(r'^webpay_detail/$', views.WebPayPaymentDetailsView.as_view(), name='webpay-details'),
+    url(r'^webpay_form/$', views.WebPayRedirectForm.as_view(), name='webpay-form'),
+    url(r'^webpay_success/$', views.WebPayPaymentSuccessView.as_view(), name='webpay-success'),
+    url(r'^webpay_place_order/$', views.WebPayPaymentSuccessView.as_view(returning_from_webpay=False),
+        name='webpay-place-order'),
+    url(r'^webpay_thanks/$', views.WebPayThankYouView.as_view(), name='webpay-txns'),
     url(r'^webpay_fail/$', views.WebPayFail.as_view(), name='webpay-fail'),
     url(r'^webpay_cancel/$', views.WebPayCancel.as_view(), name='webpay-cancel'),
 )

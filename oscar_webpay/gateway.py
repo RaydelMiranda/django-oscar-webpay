@@ -28,13 +28,13 @@ def get_webpay_client(order_number, total):
     final_url = 'http://{}:{}{}'.format(
         oscar_webpay_settings.WEBPAY_RETURN_IP_ADDRESS,
         oscar_webpay_settings.WEBPAY_RETURN_PORT,
-        reverse('webpay-cancel')
+        reverse('webpay-txns')
     )
 
     return_url = 'http://{}:{}{}'.format(
         oscar_webpay_settings.WEBPAY_RETURN_IP_ADDRESS,
         oscar_webpay_settings.WEBPAY_RETURN_PORT,
-        reverse('webpay-details-returns')
+        reverse('webpay-success')
     )
 
     initTransactionOutput = webpay.getNormalTransaction().initTransaction(amount, buy_order, session_id, return_url, final_url)

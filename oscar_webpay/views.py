@@ -26,9 +26,10 @@ import decimal
 
 # Load views dynamically
 PaymentDetailsView = get_class('checkout.views', 'PaymentDetailsView')
+ThankYouView = get_class('checkout.views', 'ThankYouView')
 CheckoutSessionMixin = get_class('checkout.session', 'CheckoutSessionMixin')
 Selector = get_class('partner.strategy', 'Selector')
-
+OrderNumberGenerator = get_class('order.utils', 'OrderNumberGenerator')
 SourceType = get_model('payment', 'SourceType')
 Source = get_model('payment', 'Source')
 Transaction = get_model('payment', 'Transaction')
@@ -47,171 +48,124 @@ UnableToPlaceOrder = get_class('oscar.apps.order.exceptions', 'UnableToPlaceOrde
 logger = logging.getLogger('oscar_webpay')
 
 
-class WebPayRedirectView(RedirectView):
+class WebPayRedirectView(CheckoutSessionMixin, RedirectView):
 
     def get_redirect_url(self, *args, **kwargs):
-        return reverse('webpay-details')
+        # Init transaction, get url and token.
+
+        basket = self.build_submission()['basket']
+        order_number = OrderNumberGenerator().order_number(basket)
+        total = basket.total_incl_tax + decimal.Decimal(self.request.session['shipping_charge'])
+
+        try:
+            response = get_webpay_client(order_number, total)
+        except Exception, unknown:
+            messages.error(self.request, six.text_type(unknown))
+            logger.error(six.text_type(unknown))
+            return reverse("basket:summary")
+        else:
+            if response['token'] and response['url']:
+                # Transaction successfully registered with WebPay.  Now freeze the
+                # basket so it can't be edited while the customer is on the WebPay
+                # site.
+                # basket.freeze()
+                logger.info("Basket #%s - redirecting to %s", basket.id, response['url'])
+                self.request.session['webpay-payment-url'] = response['url']
+                self.request.session['webpay-payment-token'] = response['token']
+                self.request.session['webpay-payment-currency'] = basket.currency
+                return reverse('webpay-form')
+            else:
+                # Something was wrong!!!  Call 911 !!!
+                messages.error(self.request, _(u'WebPay is not available right now, or is presenting problems, please comback later.'))
+                return reverse("basket:summary")
+
+class WebPayRedirectForm(TemplateView):
+    template_name = 'oscar_webpay/checkout/webpay_form.html'
+
+    def get(self, request, *args, **kwargs):
+        ctx = dict({
+            'url': self.request.session['webpay-payment-url'],
+            'token': self.request.session['webpay-payment-token'],
+            'currency': self.request.session['webpay-payment-currency']
+        })
+        return render(request, self.template_name, ctx)
 
 
 @method_decorator(csrf_exempt, name='dispatch')
-class WebPayPaymentDetailsView(PaymentDetailsView):
+class WebPayPaymentSuccessView(PaymentDetailsView):
 
     template_name_preview = 'oscar_webpay/checkout/webpay_preview.html'
 
     preview = True
-
-    class JustSubmitting(object):
-        """
-        Context declaration to automaticaly set the attr that controls the
-        behaviour of the methods according the configuration for the
-        setting `ORDER_STATUS_BEFORE_PAYMENT`
-        """
-        def __init__(self, target):
-            self.target = target
-
-        def __enter__(self):
-            self.target.submitting_just_order = True
-
-        def __exit__(self, exc_type, exc_val, exc_tb):
-            self.target.submitting_just_order = False
-
-
-    def __init__(self, *args, **kwargs):
-        self.submitting_just_order = False
-        super(PaymentDetailsView, self).__init__(*args, **kwargs)
-
-    def submit_just_order(self, user, basket, shipping_address, shipping_method,  # noqa (too complex (10))
-               shipping_charge, billing_address, order_total,
-               payment_kwargs=None, order_kwargs=None):
-        """
-        This method is for handle the use case when `PLACE_ORDER_BEFORE_TAKE_PAYMENT` is True.
-        We need to perform a serial of operations on the new order and later call the normal process
-        for submission.
-
-        This method sets the attribute `self.__submiting_just_order` to True in order to control
-        the behaviour of the subsecuents calls to the others methods.
-
-        When this method is completed `self.__submiting_just_order` is set to False again.
-
-        """
-        with self.JustSubmitting(self) as JSC:
-            order_kwargs = {}
-            # Do not care about actual payment process right now
-            # just place the order.
-            order_kwargs.update({
-                'status': _(ow_settings.ORDER_STATUS_BEFORE_PAYMENT)
-            })
-            try:
-                order_number = self.generate_order_number(basket)
-                self.handle_order_placement(
-                    order_number, user, basket, shipping_address, shipping_method,
-                    shipping_charge, billing_address, order_total, **order_kwargs)
-            except UnableToPlaceOrder as e:
-                # It's possible that something will go wrong while trying to
-                # actually place an order.  Not a good situation to be in as a
-                # payment transaction may already have taken place, but needs
-                # to be handled gracefully.
-                msg = six.text_type(e)
-                logger.error("Order #%s: unable to place order - %s",
-                             order_number, msg, exc_info=True)
-                self.restore_frozen_basket()
-                return self.render_preview(
-                    self.request, error=msg, **payment_kwargs)
-
-
-    def get(self, request, *args, **kwargs):
-        return self.render_preview(request, **kwargs)
+    returning_from_webpay = True
 
     def post(self, request, *args, **kwargs):
-        return super(WebPayPaymentDetailsView, self).post(request, *args, **kwargs)
-
-    def submit(self, user, basket, shipping_address, shipping_method,  # noqa (too complex (10))
-               shipping_charge, billing_address, order_total,
-               payment_kwargs=None, order_kwargs=None):
-            return super(WebPayPaymentDetailsView, self).submit(
-                user, basket, shipping_address,
-                shipping_method, shipping_charge, billing_address, order_total,
-                payment_kwargs, order_kwargs
-            )
+        if self.returning_from_webpay:
+            self.request.session['webpay-token'] = request.POST['token_ws']
+            return self.render_preview(request, **kwargs)
+        else:
+            return super(WebPayPaymentSuccessView, self).post(request, *args, **kwargs)
 
     def build_submission(self, **kwargs):
-        submission = super(WebPayPaymentDetailsView, self).build_submission(**kwargs)
+        submission = super(WebPayPaymentSuccessView, self).build_submission(**kwargs)
         submission['order_kwargs']['guest_email'] = self.checkout_session.get_guest_email()
         if self.request.user.is_authenticated():
             submission['order_kwargs']['user'] = self.request.user
         return submission
 
-    def handle_place_order_submission(self, request):
-
-        submission = self.build_submission()
-
-        if ow_settings.PLACE_ORDER_BEFORE_TAKE_PAYMENT:
-            # Submit just the order first ...
-            self.submit_just_order(**submission)
-        # and then call the normal submission process.
-        return super(WebPayPaymentDetailsView, self).submit(**submission)
-
-
     def handle_payment(self, order_number, total, **kwargs):
-        if not self.submitting_just_order:
-            logger.debug(_(u"Initializing transaction with WebPay"))
-            init_transaction_data = get_webpay_client(order_number, total)
-            logger.debug(_(u"Redirecting to WebPay"))
-            raise RedirectRequired(init_transaction_data['url'])
-        else:
-            # We don't  have any payment to handle while just submiting the order.
-            pass
+        """
+        Complete payment with WebPay method to capture the money 
+        from the initial transaction.
+        """
+        logger.debug(_(u"Payment transaction with WebPay"))
+        try:
+            init_transaction_data = confirm_transaction(self.request.session['webpay-token'])
+        except Exception as unknown_error:
+            messages.error(self.request, six.text_type(unknown_error))
+            raise UnableToTakePayment(six.text_type(unknown_error))
 
-    def handle_order_placement(self, order_number, user, basket,
-                               shipping_address, shipping_method,
-                               shipping_charge, billing_address, order_total,
-                               **kwargs):
+        resp_code = init_transaction_data.detailOutput[0]['responseCode']
 
-        if self.submitting_just_order:
+        if resp_code != 0:
 
-            # If order already set, there is no need to place it again.
-            try:
-                order = Order.objects.get(number=order_number)
-            except Order.DoesNotExist:
-                order = self.place_order(
-                    order_number=order_number, user=user, basket=basket,
-                    shipping_address=shipping_address, shipping_method=shipping_method,
-                    shipping_charge=shipping_charge, order_total=order_total,
-                    billing_address=billing_address, **kwargs)
-                order.save()
-                # When placing order before payment, there is no
-                # reference. This can be updated when the payment has been
-                # completed or some error happened.
-                reference = '_'
-                self.__add_payment_info("WebPay", order_total, reference, _(ow_settings.ORDER_STATUS_BEFORE_PAYMENT))
-            else:
-                # The order has been placed, don't do anything ...    please... it would be weird!
-                pass
-            return
-        else:
-            return super(WebPayPaymentDetailsView, self).handle_order_placement(
-                order_number, user, basket,
-                shipping_address, shipping_method,
-                shipping_charge, billing_address, order_total,
-                **kwargs
-            )
+            possible_errors = {
+                -1: _(u"Transaction rejected."),
+                -2: _(u"Transaction submitted again."),
+                -3: _(u"Error in transaction."),
+                -4: _(u"Transaction rejected."),
+                -5: _(u"TRejection by error of rate."),
+                -6: _(u"Exceeds monthly maximum quota."),
+                -7: _(u"Exceeds daily limit per transaction."),
+                -8: _(u"Unauthorized item.")
+            }
+            messages.error(request, possible_errors[resp_code])
+            raise UnableToTakePayment(possible_errors[resp_code])
 
-    def __add_payment_info(self, source_type_name, total, reference, status):
-        # Get source data.
-        source_type = SourceType.objects.get_or_create(name=source_type_name)
-        source = Source(
-            source_type=source_type,
-            amount_allocated=total.incl_tax,
-            reference=reference)
-        # Add payment info.
+        # Record payment source and event
+        source_type, is_created = SourceType.objects.get_or_create(
+            name='WebPay')
+
+        basket = self.get_submitted_basket()
+
+        source = Source(source_type=source_type,
+                        currency=basket.currency,
+                        amount_allocated=init_transaction_data.detailOutput[0]['amount']
+        )
         self.add_payment_source(source)
-        self.add_payment_event(status, total.incl_tax)
+        self.add_payment_event(_(u'Settled'), init_transaction_data.amount,
+                               reference=init_transaction_data.buyOrder)
 
 
 @method_decorator(csrf_exempt, name='dispatch')
 class WebPayCancel(View):
     def post(self, request, *args, **kwargs):
         return redirect('basket:summary')
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class WebPayThankYouView(ThankYouView):
+    pass
 
 @method_decorator(csrf_exempt, name='dispatch')
 class WebPayFail(View):
@@ -220,6 +174,3 @@ class WebPayFail(View):
     def get_context_data(self, **kwargs):
         ctx = super(WebPayFail, self).get_context_data(**kwargs)
         return ctx
-
-
-
