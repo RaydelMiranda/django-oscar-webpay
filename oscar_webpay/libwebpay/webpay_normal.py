@@ -100,11 +100,13 @@ class WebpayNormal():
     def getTransaction(token):
         client = WebpayNormal.get_client(url, config.getPrivateKey(), config.getPublicCert(), config.getWebPayCert());
         client.options.cache.clear();
-
         transactionResultOutput = client.service.getTransactionResult(token);
-        acknowledge = WebpayNormal.acknowledgeTransaction(token);
-
+        # acknowledge = WebpayNormal.acknowledgeTransaction(token);
         return transactionResultOutput;
+
+    def acknowledgeTransaction(self, token):
+        acknowledge = WebpayNormal.acknowledgeTransaction(token);
+        return acknowledge
 
     """
 	acknowledgeTransaction

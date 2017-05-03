@@ -3,6 +3,13 @@ from oscar_webpay.certificates import cert_normal
 from oscar_webpay.libwebpay.configuration import Configuration
 
 from oscar_webpay.oscar_webpay_settings import oscar_webpay_settings
+from oscar_webpay.exceptions import \
+    AuthenticationError, \
+    FailedTransaction, \
+    AbortedTransactionByCardHolder, \
+    TimeLimitExceeded, \
+    U3Exception
+
 from django.core.urlresolvers import reverse
 
 
@@ -43,6 +50,33 @@ def get_webpay_client(order_number, total):
 
 def confirm_transaction(token):
     webpay = Webpay(get_webpay_conf())
-    return webpay.getNormalTransaction().getTransaction(token)
+    result = webpay.getNormalTransaction().getTransaction(token)
+
+    if result.VCI == 'TSY':
+        # Successful transaction.
+        pass
+
+    if result.VCI == 'TSN':
+        raise FailedTransaction(result)
+
+    if result.VCI == 'TO':
+        # Time limit exceeeded.
+        raise TimeLimitExceeded
+
+    if result.VCI == 'ABO':
+        # Failed transaction.
+        raise AbortedTransactionByCardHolder
+
+    if result.VCI == 'U3':
+        # Internal authentication error.
+        raise U3Exception
+
+    return result
+
+
+def acknowledge_transaction(token):
+    webpay = Webpay(get_webpay_conf())
+    result = webpay.getNormalTransaction().acknowledgeTransaction(token)
+    return  result
 
 

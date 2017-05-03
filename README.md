@@ -1,6 +1,7 @@
 Django app for integrating WepPay payment flow into an oscar e-commerce framework
 =========================
 
+Right now only the *NORMAL* payment method is available.
 
 This django app provides the necessary views and functionality for integrate a WSDL WebPay payment service into adjango-oscar based site.
 
@@ -33,6 +34,7 @@ In order to use this you must provide some configurations, you can setup the met
 
 ```python
 # Configuration example
+
 WEBPAY_RETURN_IP_ADDRESS = '127.0.0.1'              # Ip address of the host hosting the e-commerce site.
 WEBPAY_RETURN_PORT = 8000                           # Port where the server is listening for?
 
@@ -55,7 +57,6 @@ WEBPAY_NORMAL = {
     'WEBPAY_CERT':  '~/webpay_dev_certs/integracion_normal/tbk.pem',
     'COMMERCE_CODE': '597020000541'
 }
-
 ```
 
 Redirecting to **WebpayPaymentDetailsView**
@@ -65,11 +66,21 @@ Add the following:
 
 ```python
  if payment_method.lower() == 'webpay':
-        return redirect('webpay-payment')
+        return redirect('webpay-redirect')
 ```
 
 to the `PaymentDetailsView.get` method.
 
+
+Including urls
+--------------
+
+Add to your urls configuration:
+
+```python
+url(r'^checkout/', include('oscar_webpay.urls')),
+url(r'^dashboard/webpay/', include(webpay_dashboard.urls))
+```
 
 Modifying dependencies
 ----------------------

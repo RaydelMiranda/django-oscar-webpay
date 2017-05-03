@@ -19,8 +19,18 @@ from django.views.generic import View, RedirectView, TemplateView, DetailView
 from django.core.urlresolvers import reverse
 
 from oscar.core.loading import get_class, get_model, get_classes
-from oscar_webpay.gateway import get_webpay_client, confirm_transaction
+from oscar_webpay.gateway import get_webpay_client, confirm_transaction, acknowledge_transaction
 from oscar_webpay.oscar_webpay_settings import oscar_webpay_settings as ow_settings
+from oscar_webpay.models import WebPayTransaction
+
+from oscar_webpay.exceptions import \
+    AbortedTransactionByCardHolder, \
+    MissingShippingMethodException, \
+    MissingShippingAddressException, \
+    AuthenticationError, \
+    FailedTransaction, \
+    TimeLimitExceeded, \
+    U3Exception
 
 import decimal
 
@@ -28,6 +38,7 @@ import decimal
 PaymentDetailsView = get_class('checkout.views', 'PaymentDetailsView')
 ThankYouView = get_class('checkout.views', 'ThankYouView')
 CheckoutSessionMixin = get_class('checkout.session', 'CheckoutSessionMixin')
+CheckoutSessionData = get_class('checkout.session', 'CheckoutSessionData')
 Selector = get_class('partner.strategy', 'Selector')
 OrderNumberGenerator = get_class('order.utils', 'OrderNumberGenerator')
 SourceType = get_model('payment', 'SourceType')
@@ -45,6 +56,13 @@ RedirectRequired, UnableToTakePayment, PaymentError \
 
 UnableToPlaceOrder = get_class('oscar.apps.order.exceptions', 'UnableToPlaceOrder')
 
+try:
+    Applicator = get_class('offer.applicator', 'Applicator')
+except ModuleNotFoundError:
+    # fallback for django-oscar<=1.1
+    Applicator = get_class('offer.utils', 'Applicator')
+
+
 logger = logging.getLogger('oscar_webpay')
 
 
@@ -55,7 +73,33 @@ class WebPayRedirectView(CheckoutSessionMixin, RedirectView):
 
         basket = self.build_submission()['basket']
         order_number = OrderNumberGenerator().order_number(basket)
-        total = basket.total_incl_tax + decimal.Decimal(self.request.session['shipping_charge'])
+
+        total = basket.total_incl_tax
+
+        # TODO: This is the correct way of doing things, remember to
+        # TODO: implement a proper Shipping method with its corresponding method,
+        # TODO: in order to calculate correctly the cost.
+
+        # # Getting shipping charge.
+        # if basket.is_shipping_required():
+        #     # Only check for shipping details if required.
+        #     shipping_addr = self.get_shipping_address(basket)
+        #     if not shipping_addr:
+        #         raise MissingShippingAddressException(shipping_addr)
+        #
+        #     shipping_method = self.get_shipping_method(
+        #         basket, shipping_addr)
+        #     if not shipping_method:
+        #         raise MissingShippingMethodException(shipping_method)
+        #     total += shipping_method.calculate(basket)
+
+
+        # This is an ugly hack, very very ugly, this is
+        # here only for villaflores purposes, do not push this
+        # to the main branch.
+        if basket.is_shipping_required():
+            session_data = CheckoutSessionData(self.request)
+            total += decimal.Decimal(session_data.get_shipping_cost())
 
         try:
             response = get_webpay_client(order_number, total)
@@ -68,7 +112,6 @@ class WebPayRedirectView(CheckoutSessionMixin, RedirectView):
                 # Transaction successfully registered with WebPay.  Now freeze the
                 # basket so it can't be edited while the customer is on the WebPay
                 # site.
-                # basket.freeze()
                 logger.info("Basket #%s - redirecting to %s", basket.id, response['url'])
                 self.request.session['webpay-payment-url'] = response['url']
                 self.request.session['webpay-payment-token'] = response['token']
@@ -99,48 +142,90 @@ class WebPayPaymentSuccessView(PaymentDetailsView):
     preview = True
     returning_from_webpay = True
 
+    init_transaction_data = None
+
     def post(self, request, *args, **kwargs):
         if self.returning_from_webpay:
             self.request.session['webpay-token'] = request.POST['token_ws']
-            return self.render_preview(request, **kwargs)
+            try:
+                self.init_transaction_data = confirm_transaction(self.request.session['webpay-token'])
+            except TimeLimitExceeded as error:
+                error_msg = _(u"Time limit exceeded")
+                messages.error(self.request, msg)
+                raise UnableToTakePayment(msg)
+            except AbortedTransactionByCardHolder as error:
+                msg = _(u"Transaction canceled by cardholder")
+                messages.info(self.request, msg)
+                raise UnableToTakePayment(msg)
+            except FailedTransaction as error:
+                msg = _(u"Failed transaction")
+                messages.error(self.request, msg)
+                raise UnableToTakePayment(msg)
+            except U3Exception as error:
+                msg = _(u"Authentication internal error")
+                messages.error(self.request, msg)
+                raise UnableToTakePayment(msg)
+            except Exception as unknown_error:
+                # TODO: write a good loginc here to handle all the 328 possible exceptions
+                messages.error(self.request, six.text_type(unknown_error))
+                raise UnableToTakePayment(six.text_type(unknown_error))
+
+            resp_code = self.init_transaction_data.detailOutput[0]['responseCode']
+
+            if resp_code != 0:
+                possible_errors = {
+                    -1: _(u"Transaction rejected."),
+                    -2: _(u"Transaction submitted again."),
+                    -3: _(u"Error in transaction."),
+                    -4: _(u"Transaction rejected."),
+                    -5: _(u"Rejection by error of rate."),
+                    -6: _(u"Exceeds monthly maximum quota."),
+                    -7: _(u"Exceeds daily limit per transaction."),
+                    -8: _(u"Unauthorized item.")
+                }
+                messages.error(request, possible_errors[resp_code])
+                raise UnableToTakePayment(possible_errors[resp_code])
+
+            return self.render_preview(
+                request,
+                auth_code=self.init_transaction_data.detailOutput[0].authorizationCode,
+                txn_date=self.init_transaction_data.transactionDate,
+                payment_type=self.init_transaction_data.detailOutput[0].paymentTypeCode,
+                card_number=self.init_transaction_data.cardDetail.cardNumber,
+                **kwargs
+            )
         else:
             return super(WebPayPaymentSuccessView, self).post(request, *args, **kwargs)
 
-    def build_submission(self, **kwargs):
-        submission = super(WebPayPaymentSuccessView, self).build_submission(**kwargs)
-        submission['order_kwargs']['guest_email'] = self.checkout_session.get_guest_email()
-        if self.request.user.is_authenticated():
-            submission['order_kwargs']['user'] = self.request.user
-        return submission
-
     def handle_payment(self, order_number, total, **kwargs):
         """
-        Complete payment with WebPay method to capture the money 
+        Complete payment with WebPay method to capture the money
         from the initial transaction.
         """
         logger.debug(_(u"Payment transaction with WebPay"))
+
         try:
-            init_transaction_data = confirm_transaction(self.request.session['webpay-token'])
+            result = acknowledge_transaction(self.request.session['webpay-token'])
+        except TimeLimitExceeded as error:
+            error_msg = _(u"Time limit exceeded")
+            messages.error(self.request, msg)
+            raise UnableToTakePayment(msg)
+        except AbortedTransactionByCardHolder as error:
+            msg = _(u"Transaction canceled by cardholder")
+            messages.info(self.request, msg)
+            raise UnableToTakePayment(msg)
+        except FailedTransaction as error:
+            msg = _(u"Failed transaction")
+            messages.error(self.request, msg)
+            raise UnableToTakePayment(msg)
+        except U3Exception as error:
+            msg = _(u"Authentication internal error")
+            messages.error(self.request, msg)
+            raise UnableToTakePayment(msg)
         except Exception as unknown_error:
+            # TODO: write a good loginc here to handle all the 328 possible exceptions
             messages.error(self.request, six.text_type(unknown_error))
             raise UnableToTakePayment(six.text_type(unknown_error))
-
-        resp_code = init_transaction_data.detailOutput[0]['responseCode']
-
-        if resp_code != 0:
-
-            possible_errors = {
-                -1: _(u"Transaction rejected."),
-                -2: _(u"Transaction submitted again."),
-                -3: _(u"Error in transaction."),
-                -4: _(u"Transaction rejected."),
-                -5: _(u"TRejection by error of rate."),
-                -6: _(u"Exceeds monthly maximum quota."),
-                -7: _(u"Exceeds daily limit per transaction."),
-                -8: _(u"Unauthorized item.")
-            }
-            messages.error(request, possible_errors[resp_code])
-            raise UnableToTakePayment(possible_errors[resp_code])
 
         # Record payment source and event
         source_type, is_created = SourceType.objects.get_or_create(
@@ -148,13 +233,22 @@ class WebPayPaymentSuccessView(PaymentDetailsView):
 
         basket = self.get_submitted_basket()
 
+        # Assign strategy to basket instance
+        if Selector:
+            basket.strategy = Selector().strategy(self.request)
+
+        # Re-apply any offers
+        Applicator().apply(request=self.request, basket=basket)
+
         source = Source(source_type=source_type,
                         currency=basket.currency,
-                        amount_allocated=init_transaction_data.detailOutput[0]['amount']
+                        amount_allocated=basket.total_incl_tax + \
+                                         decimal.Decimal(self.checkout_session.get_shipping_cost())
         )
         self.add_payment_source(source)
-        self.add_payment_event(_(u'Settled'), init_transaction_data.amount,
-                               reference=init_transaction_data.buyOrder)
+        self.add_payment_event(_(u'Settled'), basket.total_incl_tax + \
+                               decimal.Decimal(self.checkout_session.get_shipping_cost()),
+                               reference=order_number)
 
 
 @method_decorator(csrf_exempt, name='dispatch')
