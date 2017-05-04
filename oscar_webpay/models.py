@@ -33,7 +33,7 @@ class WebPayTransaction(CoreTransaction):
     auth_code = models.CharField(_(u"Authorization code"), max_length=6)
     card_number = models.CharField(_(u"Card number"), max_length=4)
 
-    error_auth_code = models.IntegerField(_(u"Error code"), max_length=3, choices=TRANSACTION_ERROR_CODE_CHOICES)
+    error_auth_code = models.IntegerField(_(u"Error code"), choices=TRANSACTION_ERROR_CODE_CHOICES)
     transaction_type = models.CharField(_(u"Transaction type"), max_length=255, choices=TRANSACTION_TYPE_CHOICES)
 
     def method(self):

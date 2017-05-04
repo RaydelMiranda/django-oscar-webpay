@@ -152,7 +152,7 @@ class WebPayPaymentSuccessView(PaymentDetailsView):
             except TimeLimitExceeded as error:
                 error_msg = _(u"Time limit exceeded")
                 messages.error(self.request, msg)
-                raise UnableToTakePayment(msg)
+                return redirect('basket:summary')
             except AbortedTransactionByCardHolder as error:
                 msg = _(u"Transaction canceled by cardholder")
                 messages.info(self.request, msg)
@@ -160,15 +160,15 @@ class WebPayPaymentSuccessView(PaymentDetailsView):
             except FailedTransaction as error:
                 msg = _(u"Failed transaction")
                 messages.error(self.request, msg)
-                raise UnableToTakePayment(msg)
+                return redirect('basket:summary')
             except U3Exception as error:
                 msg = _(u"Authentication internal error")
                 messages.error(self.request, msg)
-                raise UnableToTakePayment(msg)
+                return redirect('basket:summary')
             except Exception as unknown_error:
                 # TODO: write a good logic here to handle all the 328 possible exceptions
-                messages.error(self.request, six.text_type(unknown_error))
-                raise UnableToTakePayment(six.text_type(unknown_error))
+                logger.error(six.text_type(unknown_error))
+                return redirect('basket:summary')
 
             resp_code = self.init_transaction_data.detailOutput[0]['responseCode']
 

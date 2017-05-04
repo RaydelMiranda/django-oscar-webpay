@@ -15,7 +15,7 @@ except(IOError, ImportError):
 setup(
     name='django-oscar-webpay',
 
-    version='0.2.0',
+    version='0.2.3',
 
     description='An application for intagrating WebPay with oscar based e-commerce sites',
     long_description=long_description,
@@ -57,7 +57,15 @@ setup(
 
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
-    packages=['oscar_webpay', 'oscar_webpay.certificates', 'oscar_webpay.libwebpay'],
+    packages=[
+        'oscar_webpay',
+        'oscar_webpay.certificates',
+        'oscar_webpay.libwebpay',
+        'oscar_webpay.dashboard',
+        'oscar_webpay.exceptions'
+    ],
+
+    include_package_data=True,
 
     install_requires=['suds==0.4', 'py-wsse==0.1'],
 )
