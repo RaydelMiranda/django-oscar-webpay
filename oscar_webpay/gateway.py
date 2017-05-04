@@ -35,7 +35,7 @@ def get_webpay_client(order_number, total):
     final_url = 'http://{}:{}{}'.format(
         oscar_webpay_settings.WEBPAY_RETURN_IP_ADDRESS,
         oscar_webpay_settings.WEBPAY_RETURN_PORT,
-        reverse('webpay-txns')
+        reverse('webpay-end-redirect')
     )
 
     return_url = 'http://{}:{}{}'.format(
@@ -73,8 +73,7 @@ def confirm_transaction(token):
 
     return result
 
-
-def acknowledge_transaction(token):
+def  acknowledge_transaction(token):
     webpay = Webpay(get_webpay_conf())
     result = webpay.getNormalTransaction().acknowledgeTransaction(token)
     return  result

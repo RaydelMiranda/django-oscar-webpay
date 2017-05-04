@@ -156,7 +156,7 @@ class WebPayPaymentSuccessView(PaymentDetailsView):
             except AbortedTransactionByCardHolder as error:
                 msg = _(u"Transaction canceled by cardholder")
                 messages.info(self.request, msg)
-                raise UnableToTakePayment(msg)
+                return redirect('basket:summary')
             except FailedTransaction as error:
                 msg = _(u"Failed transaction")
                 messages.error(self.request, msg)
@@ -166,7 +166,7 @@ class WebPayPaymentSuccessView(PaymentDetailsView):
                 messages.error(self.request, msg)
                 raise UnableToTakePayment(msg)
             except Exception as unknown_error:
-                # TODO: write a good loginc here to handle all the 328 possible exceptions
+                # TODO: write a good logic here to handle all the 328 possible exceptions
                 messages.error(self.request, six.text_type(unknown_error))
                 raise UnableToTakePayment(six.text_type(unknown_error))
 
@@ -196,6 +196,13 @@ class WebPayPaymentSuccessView(PaymentDetailsView):
             )
         else:
             return super(WebPayPaymentSuccessView, self).post(request, *args, **kwargs)
+
+    def build_submission(self, **kwargs):
+        submission = super(WebPayPaymentSuccessView, self).build_submission(**kwargs)
+        submission['order_kwargs'].update({
+            'status': _(u'Settled')
+        })
+        return submission
 
     def handle_payment(self, order_number, total, **kwargs):
         """
@@ -240,15 +247,26 @@ class WebPayPaymentSuccessView(PaymentDetailsView):
         # Re-apply any offers
         Applicator().apply(request=self.request, basket=basket)
 
+        total_const = basket.total_incl_tax + decimal.Decimal(self.checkout_session.get_shipping_cost())
+
         source = Source(source_type=source_type,
                         currency=basket.currency,
-                        amount_allocated=basket.total_incl_tax + \
-                                         decimal.Decimal(self.checkout_session.get_shipping_cost())
-        )
+                        amount_allocated=total_const,
+                        amount_debited=total_const,
+                        )
+
         self.add_payment_source(source)
-        self.add_payment_event(_(u'Settled'), basket.total_incl_tax + \
-                               decimal.Decimal(self.checkout_session.get_shipping_cost()),
+
+        status = _(u'Settled')
+        self.add_payment_event(status, total_const,
                                reference=order_number)
+
+        source.create_deferred_transaction(
+            Transaction.DEBIT,
+            total_const,
+            reference=str(uuid.uuid4()),
+            status=status
+        )
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -258,8 +276,23 @@ class WebPayCancel(View):
 
 
 @method_decorator(csrf_exempt, name='dispatch')
+class WebPayEndRedirect(RedirectView):
+
+    def get_redirect_url(self, *args, **kwargs):
+        if self.request.POST.get('TBK_TOKEN', False):
+            msg = _(u"Transaction canceled by cardholder")
+            messages.info(self.request, msg)
+            return reverse("basket:summary")
+        else:
+            return reverse('webpay-txns')
+
+
+@method_decorator(csrf_exempt, name='dispatch')
 class WebPayThankYouView(ThankYouView):
     pass
+
+
+
 
 @method_decorator(csrf_exempt, name='dispatch')
 class WebPayFail(View):
