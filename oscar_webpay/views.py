@@ -102,7 +102,9 @@ class WebPayRedirectView(CheckoutSessionMixin, RedirectView):
             total += decimal.Decimal(session_data.get_shipping_cost())
 
         try:
-            response = get_webpay_client(order_number, total)
+            response = get_webpay_client(
+                order_number, total, 'webpay-success', 'webpay-end-redirect'
+            )
         except Exception, unknown:
             messages.error(self.request, six.text_type(unknown))
             logger.error(six.text_type(unknown))
@@ -121,6 +123,7 @@ class WebPayRedirectView(CheckoutSessionMixin, RedirectView):
                 # Something was wrong!!!  Call 911 !!!
                 messages.error(self.request, _(u'WebPay is not available right now, or is presenting problems, please comback later.'))
                 return reverse("basket:summary")
+
 
 class WebPayRedirectForm(TemplateView):
     template_name = 'oscar_webpay/checkout/webpay_form.html'
@@ -142,58 +145,10 @@ class WebPayPaymentSuccessView(PaymentDetailsView):
     preview = True
     returning_from_webpay = True
 
-    init_transaction_data = None
-
     def post(self, request, *args, **kwargs):
         if self.returning_from_webpay:
             self.request.session['webpay-token'] = request.POST['token_ws']
-            try:
-                self.init_transaction_data = confirm_transaction(self.request.session['webpay-token'])
-            except TimeLimitExceeded as error:
-                error_msg = _(u"Time limit exceeded")
-                messages.error(self.request, msg)
-                return redirect('basket:summary')
-            except AbortedTransactionByCardHolder as error:
-                msg = _(u"Transaction canceled by cardholder")
-                messages.info(self.request, msg)
-                return redirect('basket:summary')
-            except FailedTransaction as error:
-                msg = _(u"Failed transaction")
-                messages.error(self.request, msg)
-                return redirect('basket:summary')
-            except U3Exception as error:
-                msg = _(u"Authentication internal error")
-                messages.error(self.request, msg)
-                return redirect('basket:summary')
-            except Exception as unknown_error:
-                # TODO: write a good logic here to handle all the 328 possible exceptions
-                logger.error(six.text_type(unknown_error))
-                return redirect('basket:summary')
-
-            resp_code = self.init_transaction_data.detailOutput[0]['responseCode']
-
-            if resp_code != 0:
-                possible_errors = {
-                    -1: _(u"Transaction rejected."),
-                    -2: _(u"Transaction submitted again."),
-                    -3: _(u"Error in transaction."),
-                    -4: _(u"Transaction rejected."),
-                    -5: _(u"Rejection by error of rate."),
-                    -6: _(u"Exceeds monthly maximum quota."),
-                    -7: _(u"Exceeds daily limit per transaction."),
-                    -8: _(u"Unauthorized item.")
-                }
-                messages.error(request, possible_errors[resp_code])
-                raise UnableToTakePayment(possible_errors[resp_code])
-
-            return self.render_preview(
-                request,
-                auth_code=self.init_transaction_data.detailOutput[0].authorizationCode,
-                txn_date=self.init_transaction_data.transactionDate,
-                payment_type=self.init_transaction_data.detailOutput[0].paymentTypeCode,
-                card_number=self.init_transaction_data.cardDetail.cardNumber,
-                **kwargs
-            )
+            return self.render_preview(request, **kwargs)
         else:
             return super(WebPayPaymentSuccessView, self).post(request, *args, **kwargs)
 
@@ -210,29 +165,64 @@ class WebPayPaymentSuccessView(PaymentDetailsView):
         from the initial transaction.
         """
         logger.debug(_(u"Payment transaction with WebPay"))
+        generic_error_message = _(u"Something went wrong, plese try again later.")
 
         try:
+            confirmed_transaction = confirm_transaction(self.request.session['webpay-token'])
             result = acknowledge_transaction(self.request.session['webpay-token'])
         except TimeLimitExceeded as error:
             error_msg = _(u"Time limit exceeded")
-            messages.error(self.request, msg)
-            raise UnableToTakePayment(msg)
+            messages.error(self.request, error_msg)
+            raise PaymentError(error_msg)
         except AbortedTransactionByCardHolder as error:
-            msg = _(u"Transaction canceled by cardholder")
-            messages.info(self.request, msg)
-            raise UnableToTakePayment(msg)
+            error_msg = _(u"Transaction canceled by cardholder")
+            messages.info(self.request, error_msg)
+            raise PaymentError(error_msg)
         except FailedTransaction as error:
-            msg = _(u"Failed transaction")
-            messages.error(self.request, msg)
-            raise UnableToTakePayment(msg)
+            error_msg = _(u"Failed transaction")
+            messages.error(self.request, error_msg)
+            raise PaymentError(error_msg)
         except U3Exception as error:
-            msg = _(u"Authentication internal error")
-            messages.error(self.request, msg)
-            raise UnableToTakePayment(msg)
+            error_msg = _(u"Authentication internal error")
+            messages.error(self.request, error_msg)
+            raise PaymentError(error_msg)
+        except TimeLimitExceeded as error:
+            error_msg = _(u"Time limit exceeded")
+            messages.error(self.request, error_msg)
+            raise PaymentError(error_msg)
+        except AbortedTransactionByCardHolder as error:
+            error_msg = _(u"Transaction canceled by cardholder")
+            messages.info(self.request, error_msg)
+            raise PaymentError(error_msg)
+        except FailedTransaction as error:
+            error_msg = _(u"Failed transaction")
+            messages.error(self.request, error_msg)
+            raise PaymentError(error_msg)
+        except U3Exception as error:
+            error_msg = _(u"Authentication internal error")
+            messages.error(self.request, error_msg)
+            raise PaymentError(error_msg)
         except Exception as unknown_error:
-            # TODO: write a good loginc here to handle all the 328 possible exceptions
-            messages.error(self.request, six.text_type(unknown_error))
-            raise UnableToTakePayment(six.text_type(unknown_error))
+            # TODO: write a good logic here to handle all the 328 possible exceptions
+            logger.error(six.text_type(unknown_error))
+            messages.error(self.request, generic_error_message)
+            raise PaymentError(unknown_error)
+
+        resp_code = confirmed_transaction.detailOutput[0]['responseCode']
+
+        if resp_code != 0:
+            possible_errors = {
+                -1: _(u"Transaction rejected."),
+                -2: _(u"Transaction submitted again."),
+                -3: _(u"Error in transaction."),
+                -4: _(u"Transaction rejected."),
+                -5: _(u"Rejection by error of rate."),
+                -6: _(u"Exceeds monthly maximum quota."),
+                -7: _(u"Exceeds daily limit per transaction."),
+                -8: _(u"Unauthorized item.")
+            }
+            messages.error(self.request, possible_errors[resp_code])
+            raise PaymentError(possible_errors[resp_code])
 
         # Record payment source and event
         source_type, is_created = SourceType.objects.get_or_create(
@@ -247,6 +237,7 @@ class WebPayPaymentSuccessView(PaymentDetailsView):
         # Re-apply any offers
         Applicator().apply(request=self.request, basket=basket)
 
+        # TODO: Hmmmmmmm ...
         total_const = basket.total_incl_tax + decimal.Decimal(self.checkout_session.get_shipping_cost())
 
         source = Source(source_type=source_type,
@@ -268,6 +259,51 @@ class WebPayPaymentSuccessView(PaymentDetailsView):
             status=status
         )
 
+        # Save transaction details in order to make them available min the thanks view
+        transaction_details = dict({
+            # TypeTransactionResultOutput.cardDetail
+            # -------------------------------------------
+            'webpay_buy_order': confirmed_transaction.buyOrder,
+            'webpay_accounting_date': confirmed_transaction.accountingDate,
+            'webpay_transaction_date': confirmed_transaction.transactionDate,
+            'webpay_VCI': confirmed_transaction.VCI,
+            'webpay_url_redirection': confirmed_transaction.urlRedirection,
+            # TypeTransactionResultOutput.detailOuput
+            # -------------------------------------------
+            'webpay_authorization_code': confirmed_transaction.detailOutput[0].authorizationCode,
+            'webpay_amount': confirmed_transaction.detailOutput[0].amount,
+            'webpay_commerce_code': confirmed_transaction.detailOutput[0].commerceCode,
+            'webpay_buyOrder': confirmed_transaction.detailOutput[0].buyOrder,
+            'webpay_shares_number': confirmed_transaction.detailOutput[0].sharesNumber,
+            'webpay_response_code': confirmed_transaction.detailOutput[0].responseCode,
+            'webpay_payment_type_code': confirmed_transaction.detailOutput[0].paymentTypeCode,
+            # TypeTransactionResultOutput.cardDetails
+            # -------------------------------------------
+            'webpay_card_number': confirmed_transaction.cardDetail.cardNumber,
+            # (Optional) Credit card expiration date of Cardholder. Format YYMM
+            # Only for Transbank authorized merchants.
+            'webpay_card_expiration_date': confirmed_transaction.cardDetail.cardExpirationDate if \
+            hasattr(confirmed_transaction.cardDetail, 'cardExpirationDate') else None
+        })
+        self.save_transaction_details(**transaction_details)
+
+        self.request.session['payment_url'] = confirmed_transaction.urlRedirection
+        raise RedirectRequired(reverse('webpay-form'))
+
+    def save_transaction_details(self, **kwargs):
+        """
+        This view is for saving the transaction details to the section data in order to
+        make then available to the thanks view.
+
+        :param request:  The request of the current view.
+        :param kwargs:   All the key value pairs to save in the session.
+        :return: None
+        """
+        self.request.session.update(kwargs)
+
+    def get_success_url(self):
+        return reverse('webpay-txns')
+
 
 @method_decorator(csrf_exempt, name='dispatch')
 class WebPayCancel(View):
@@ -284,14 +320,40 @@ class WebPayEndRedirect(RedirectView):
             messages.info(self.request, msg)
             return reverse("basket:summary")
         else:
-            return reverse('webpay-txns')
+           return reverse('webpay-txns')
 
 
 @method_decorator(csrf_exempt, name='dispatch')
 class WebPayThankYouView(ThankYouView):
-    pass
+    template_name = 'oscar_webpay/checkout/webpay_thank_you.html'
 
+    def get_context_data(self, **kwargs):
+        ctx = super(WebPayThankYouView, self).get_context_data(**kwargs)
+        ctx.update({
+            # TypeTransactionResultOutput.cardDetail
+            # -------------------------------------------
+            'webpay_buy_order': self.request.session['webpay_buy_order'],
+            'webpay_accounting_date': self.request.session['webpay_accounting_date'],
+            'webpay_transaction_date': self.request.session['webpay_transaction_date'],
+            'webpay_VCI': self.request.session['webpay_VCI'],
+            'webpay_url_redirection': self.request.session['webpay_url_redirection'],
+            # TypeTransactionResultOutput.detailOuput
+            # -------------------------------------------
+            'webpay_authorization_code': self.request.session['webpay_authorization_code'],
+            'webpay_amount': self.request.session['webpay_amount'],
+            'webpay_commerce_code': self.request.session['webpay_commerce_code'],
+            'webpay_buyOrder': self.request.session['webpay_buyOrder'],
+            'webpay_shares_number': self.request.session['webpay_shares_number'],
+            'webpay_response_code': self.request.session['webpay_response_code'],
+            'webpay_payment_type_code': self.request.session['webpay_payment_type_code'],
+            # TypeTransactionResultOutput.cardDetails
+            # -------------------------------------------
+            'webpay_card_number': self.request.session['webpay_card_number'],
+            # Card
+            'webpay_card_expiration_date': self.request.session['webpay_card_expiration_date']
+        })
 
+        return ctx
 
 
 @method_decorator(csrf_exempt, name='dispatch')

@@ -3,24 +3,6 @@
 {% load static %}
 
 
-{% block payment_method %}
-{{ block.super }}
-<div class="col-sm-12 panel well" style="padding-margin: 10px; padding-margin: 10px;">
-    <ul>
-        <li>{% trans "Authorization code: " %}<b>{{ auth_code }}</b></li>
-        <li>{% trans "Transaction Date: " %}<b>{{ txn_date }}</b></li>
-        <li>{% trans "Payment type:" %}<b>{{ payment_type }}</b></li>
-        <li>{% trans "Credit card: ############" %}<b>{{ card_number }}</b></li>
-        {% if payment_quota %}
-            <li>{% trans "" %}{{ aa }}</li>
-            <li>{% trans "" %}{{ aa }}</li>
-            <li>{% trans "" %}{{ aa }}</li>
-        {% endif %}
-    </ul>
-</div>
-{% endblock %}
-
-
 {% block place_order %}
 {% comment %}
 Overwrite this template at will in roder to met your site's requirements.

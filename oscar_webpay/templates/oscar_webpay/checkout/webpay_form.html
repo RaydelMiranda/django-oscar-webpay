@@ -5,7 +5,7 @@
     <title>Pago WebPay</title>
 </head>
 <body onload="submit()">
-<form action="{{ url }}">
+<form action="{{ url }}" method="post">
     <input type="hidden" name="token_ws" value="{{ token }}" />
 </form>
 <script>
