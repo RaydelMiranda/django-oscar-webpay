@@ -1,5 +1,5 @@
-Django app for integrating WepPay payment flow into an oscar e-commerce framework
-=========================
+Django app for integrating WepPay payment flow into an oscar e-commerce framework based site.
+=============================================================================================
 
 Right now only the *NORMAL* payment method is available.
 
@@ -87,6 +87,5 @@ Modifying dependencies
 
 If you are experiencing some problems getting this to work properly, try to modify some dependencies according to this:
 
-http://www.transbankdevelopers.cl/?m=api
-
+[TransbankDevelopers](http://www.transbankdevelopers.cl/?m=api "Tbk. Developers")
 

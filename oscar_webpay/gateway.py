@@ -76,6 +76,6 @@ def confirm_transaction(token):
 def  acknowledge_transaction(token):
     webpay = Webpay(get_webpay_conf())
     result = webpay.getNormalTransaction().acknowledgeTransaction(token)
-    return  result
+    return result
 
 
