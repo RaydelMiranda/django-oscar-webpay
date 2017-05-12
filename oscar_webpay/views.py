@@ -56,11 +56,7 @@ RedirectRequired, UnableToTakePayment, PaymentError \
 
 UnableToPlaceOrder = get_class('oscar.apps.order.exceptions', 'UnableToPlaceOrder')
 
-try:
-    Applicator = get_class('offer.applicator', 'Applicator')
-except ModuleNotFoundError:
-    # fallback for django-oscar<=1.1
-    Applicator = get_class('offer.utils', 'Applicator')
+Applicator = get_class('offer.applicator', 'Applicator')
 
 
 logger = logging.getLogger('oscar_webpay')
