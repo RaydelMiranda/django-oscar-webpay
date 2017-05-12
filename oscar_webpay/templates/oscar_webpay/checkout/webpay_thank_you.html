@@ -1,0 +1,85 @@
+{% extends "checkout/layout.html" %}
+
+{% load currency_filters %}
+{% load thumbnail %}
+{% load i18n %}
+{% load staticfiles %}
+{% load custom_tags %}
+{% load product_tags %}
+{% load display_tags %}
+
+{% block order_tracking %}
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="panel">
+                <div class="panel-heading panel-heading-sm panel-theme614-gray">
+                    <h3 class="panel-title">{% trans "Transition summary" %}</h3>
+                </div>
+                <div class="panel-body">
+                    {% for source in order.sources.all %}
+                        <div class="payment-info col-md-4">
+                            {% thumbnail source.source_type.image "350" crop="center" as im %}
+                                <div class="img-wrapper">
+{#                                        <div class="payment-name">{{ source.source_type.code|upper }}</div>#}
+                                    <img class="payment-image" src="{{ im.url }}" width="{{ im.width }}"
+                                         height="{{ im.height }}" alt="{{ label }}">
+                                </div>
+                            {% endthumbnail %}
+                        </div>
+                        <div class="col-md-4 payment-instruction">
+                            <p>
+                                 <ul>
+                                    <li>{% trans "Authorization code: " %}<b>{{ auth_code }}</b></li>
+                                    <li>{% trans "Transaction Date: " %}<b>{{ txn_date }}</b></li>
+                                    <li>{% trans "Payment type:" %}<b>{{ payment_type }}</b></li>
+                                    <li>{% trans "Credit card: ############" %}<b>{{ card_number }}</b></li>
+                                    {% if payment_quota %}
+                                        <li>{% trans "" %}{{ aa }}</li>
+                                        <li>{% trans "" %}{{ aa }}</li>
+                                        <li>{% trans "" %}{{ aa }}</li>
+                                    {% endif %}
+                                </ul>
+                            </p>
+                        </div>
+                        <div class="col-md-4">
+                            <table id="basket_totals" class="table table-condensed table-hover">
+                                <tbody>
+                                <tr>
+                                    <th class="total subtotal">{% trans "Subtotal" %}</th>
+                                    <th class="total text-right subtotal">
+                                        {% if not show_tax_separately and basket.is_tax_known %}
+                                            ${{ basket.total_incl_tax|currency:basket.currency }}
+                                        {% else %}
+                                            ${{ basket.total_excl_tax|currency:basket.currency }}
+                                        {% endif %}
+                                    </th>
+                                </tr>
+
+                                <tr>
+                                    <th>{% trans "Shipping Tax" %}</th>
+                                    <th class="text-right">
+                                        ${{ order.shipping_incl_tax|currency:order.currency }}
+                                    </th>
+                                </tr>
+                                <tr class="total-order">
+                                    <th class="total">{% trans "Order Total" %}</th>
+                                    <th class="total text-right">
+                                    <span>
+                                            ${{ order.total_incl_tax|currency:order.currency }}
+                                    </span>
+                                    </th>
+                                </tr>
+                                </tbody>
+                            </table>
+{#                               {% include 'basket/partials/basket_totals.html' with shipping_method=order.shipping_method order_total=order %}#}
+                        </div>
+                    {% empty %}
+                        <p>
+                            {% trans "No payment was required for this order." %}
+                        </p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
