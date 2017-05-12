@@ -12,6 +12,7 @@ import socket
 from oscar_webpay.certificates import cert_normal
 
 from suds.client import Client
+from suds.cache import NoCache
 from suds.wsse import Security, Timestamp
 from wsse.suds import WssePlugin
 
@@ -64,7 +65,7 @@ class WebpayNormal():
     @staticmethod
     def initTransaction(amount, buyOrder, sessionId, urlReturn, urlFinal):
         client = WebpayNormal.get_client(url, config.getPrivateKey(), config.getPublicCert(), config.getWebPayCert())
-        client.options.cache.clear();
+        #client.options.cache.clear()
         init = client.factory.create('wsInitTransactionInput')
 
         init.wSTransactionType = client.factory.create('wsTransactionType').TR_NORMAL_WS
@@ -99,7 +100,7 @@ class WebpayNormal():
     @staticmethod
     def getTransaction(token):
         client = WebpayNormal.get_client(url, config.getPrivateKey(), config.getPublicCert(), config.getWebPayCert());
-        client.options.cache.clear();
+        #client.options.cache.clear();
         transactionResultOutput = client.service.getTransactionResult(token);
         # acknowledge = WebpayNormal.acknowledgeTransaction(token);
         return transactionResultOutput;
@@ -116,7 +117,7 @@ class WebpayNormal():
     @staticmethod
     def acknowledgeTransaction(token):
         client = WebpayNormal.get_client(url, config.getPrivateKey(), config.getPublicCert(), config.getWebPayCert());
-        client.options.cache.clear();
+        #client.options.cache.clear();
 
         acknowledge = client.service.acknowledgeTransaction(token);
 
@@ -137,5 +138,5 @@ class WebpayNormal():
                     certfile=our_certfile_path,
                     their_certfile=their_certfile_path,
                 ),
-            ],
+            ], cache=NoCache()
         )
