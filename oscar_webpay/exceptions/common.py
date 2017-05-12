@@ -4,13 +4,13 @@ from django.utils.translation import ugettext_lazy as _
 class MissingShippingMethodException(Exception):
 
     def __init__(self, value):
-        self.message = _(u"Shipping method expected, reveiced: {}".format(value))
+        self.message = _(u"Shipping method expected, received: {}".format(value))
 
 
 class MissingShippingAddressException(Exception):
 
     def __init__(self, value):
-        self.message = _(u"Shipping address expected, recived: {}".format(value))
+        self.message = _(u"Shipping address expected, received: {}".format(value))
 
 
 class TransactionException(Exception):
@@ -36,6 +36,7 @@ class TimeLimitExceeded(TransactionException):
 
 class AbortedTransactionByCardHolder(TransactionException):
     pass
+
 
 class U3Exception(TransactionException):
     """ Internal error. """

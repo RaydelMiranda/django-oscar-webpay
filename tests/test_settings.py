@@ -1,6 +1,7 @@
 import os
 
-from oscar import OSCAR_MAIN_TEMPLATE_DIR
+from oscar.defaults import *
+from oscar import OSCAR_MAIN_TEMPLATE_DIR, get_core_apps
 
 BASE_DIR = os.path.dirname(__file__)
 
@@ -28,6 +29,7 @@ WEBPAY_NORMAL = {
 # Django Settings
 # -------------------------------------
 
+SECRET_KEY = 'FALSE-KEY-000'
 
 INSTALLED_APPS = [
     'django.contrib.auth',
@@ -39,36 +41,58 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'oscar_webpay',
     'compressor',
-]
+] + get_core_apps()
 
 MIDDLEWARE_CLASSES = (
-                         'django.middleware.common.CommonMiddleware',
-                         'django.contrib.sessions.middleware.SessionMiddleware',
-                         'django.middleware.csrf.CsrfViewMiddleware',
-                         'django.contrib.auth.middleware.AuthenticationMiddleware',
-                         'django.contrib.messages.middleware.MessageMiddleware',
-                         'oscar.apps.basket.middleware.BasketMiddleware',
-                     ),
-
-TEMPLATE_CONTEXT_PROCESSORS = (
-    "django.contrib.auth.context_processors.auth",
-    "django.core.context_processors.request",
-    "django.core.context_processors.debug",
-    "django.core.context_processors.i18n",
-    "django.core.context_processors.media",
-    "django.core.context_processors.static",
-    "django.contrib.messages.context_processors.messages",
-    # Oscar specific
-    'oscar.apps.search.context_processors.search_form',
-    'oscar.apps.promotions.context_processors.promotions',
-    'oscar.apps.checkout.context_processors.checkout',
-    'oscar.core.context_processors.metadata',
-    'oscar.apps.customer.notifications.context_processors.notifications',
+     'django.middleware.common.CommonMiddleware',
+     'django.contrib.sessions.middleware.SessionMiddleware',
+     'django.middleware.csrf.CsrfViewMiddleware',
+     'django.contrib.auth.middleware.AuthenticationMiddleware',
+     'django.contrib.messages.middleware.MessageMiddleware',
+     'oscar.apps.basket.middleware.BasketMiddleware'
 )
 
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [
+            os.path.join(BASE_DIR, 'oscar_webpay/templates'),
+            OSCAR_MAIN_TEMPLATE_DIR
+        ],
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.i18n',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+                'django.core.context_processors.request',
 
-TEMPLATE_DIRS = (OSCAR_MAIN_TEMPLATE_DIR,),
-ROOT_URLCONF = 'tests.urls',
-COMPRESS_ENABLED = False,
-STATIC_URL = '/',
-STATIC_ROOT = '/static/',
+                'oscar.apps.search.context_processors.search_form',
+                'oscar.apps.promotions.context_processors.promotions',
+                'oscar.apps.checkout.context_processors.checkout',
+                'oscar.apps.customer.notifications.context_processors.notifications',
+                'oscar.core.context_processors.metadata',
+
+            ],
+            'loaders': [
+                'app_namespace.Loader',
+                'django.template.loaders.filesystem.Loader',
+                'django.template.loaders.app_directories.Loader',
+            ],
+        },
+    }
+]
+
+ROOT_URLCONF = 'tests.urls'
+COMPRESS_ENABLED = False
+STATIC_ROOT = '/'
+STATIC_URL = '/static/'
+COMPRESS_URL = 'compress/'
+
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'haystack.backends.simple_backend.SimpleEngine',
+    },
+}
+

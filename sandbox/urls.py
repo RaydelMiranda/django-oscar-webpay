@@ -19,8 +19,11 @@ urlpatterns = patterns(
 
     url(r'', include(application.urls)),
 )
-urlpatterns += i18n_patterns('',
+urlpatterns += i18n_patterns(
+    '',
+    url(r'^webpay/', include('oscar_webpay.urls'))
 )
+
 if settings.DEBUG:
     import debug_toolbar
 

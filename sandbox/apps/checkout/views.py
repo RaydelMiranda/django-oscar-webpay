@@ -1,3 +1,4 @@
+from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
 from oscar.apps.checkout import views
 
@@ -15,4 +16,7 @@ class PaymentDetailsView(views.PaymentDetailsView):
         return ctx
 
     def get(self, request, *args, **kwargs):
-        return redirect('webpay-redirect')
+        return redirect(reverse('webpay-redirect', kwargs={
+            'return_url_name': 'webpay-success',
+            'final_url_name': 'webpay-end-redirect'
+        }))

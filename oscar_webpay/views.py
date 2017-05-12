@@ -54,7 +54,7 @@ RedirectRequired, UnableToTakePayment, PaymentError \
                                          'UnableToTakePayment',
                                          'PaymentError'])
 
-UnableToPlaceOrder = get_class('oscar.apps.order.exceptions', 'UnableToPlaceOrder')
+UnableToPlaceOrder = get_class('order.exceptions', 'UnableToPlaceOrder')
 
 Applicator = get_class('offer.applicator', 'Applicator')
 
@@ -67,39 +67,27 @@ class WebPayRedirectView(CheckoutSessionMixin, RedirectView):
     def get_redirect_url(self, *args, **kwargs):
         # Init transaction, get url and token.
 
-        basket = self.build_submission()['basket']
+        basket = self.request.basket
         order_number = OrderNumberGenerator().order_number(basket)
 
         total = basket.total_incl_tax
 
-        # TODO: This is the correct way of doing things, remember to
-        # TODO: implement a proper Shipping method with its corresponding method,
-        # TODO: in order to calculate correctly the cost.
-
-        # # Getting shipping charge.
-        # if basket.is_shipping_required():
-        #     # Only check for shipping details if required.
-        #     shipping_addr = self.get_shipping_address(basket)
-        #     if not shipping_addr:
-        #         raise MissingShippingAddressException(shipping_addr)
-        #
-        #     shipping_method = self.get_shipping_method(
-        #         basket, shipping_addr)
-        #     if not shipping_method:
-        #         raise MissingShippingMethodException(shipping_method)
-        #     total += shipping_method.calculate(basket)
-
-
-        # This is an ugly hack, very very ugly, this is
-        # here only for villaflores purposes, do not push this
-        # to the main branch.
+        # Getting shipping charge.
         if basket.is_shipping_required():
-            session_data = CheckoutSessionData(self.request)
-            total += decimal.Decimal(session_data.get_shipping_cost())
+            # Only check for shipping details if required.
+            shipping_addr = self.get_shipping_address(basket)
+            if not shipping_addr:
+                raise MissingShippingAddressException(shipping_addr)
+
+            shipping_method = self.get_shipping_method(
+                basket, shipping_addr)
+            if not shipping_method:
+                raise MissingShippingMethodException(shipping_method)
+            total += shipping_method.calculate(basket)
 
         try:
             response = get_webpay_client(
-                order_number, total, 'webpay-success', 'webpay-end-redirect'
+                order_number, total, self.kwargs['return_url_name'], self.kwargs['final_url_name']
             )
         except Exception, unknown:
             messages.error(self.request, six.text_type(unknown))
@@ -110,14 +98,20 @@ class WebPayRedirectView(CheckoutSessionMixin, RedirectView):
                 # Transaction successfully registered with WebPay.  Now freeze the
                 # basket so it can't be edited while the customer is on the WebPay
                 # site.
+                basket.freeze()
                 logger.info("Basket #%s - redirecting to %s", basket.id, response['url'])
-                self.request.session['webpay-payment-url'] = response['url']
-                self.request.session['webpay-payment-token'] = response['token']
-                self.request.session['webpay-payment-currency'] = basket.currency
-                return reverse('webpay-form')
+                # This form auto submit itself to webpay using js.
+                # See the template in order to see the fields
+                # TODO: Use django's forms for this?
+                return reverse('webpay-form', kwargs={
+                    'url': response['url'],
+                    'token': response['token']
+                })
             else:
                 # Something was wrong!!!  Call 911 !!!
-                messages.error(self.request, _(u'WebPay is not available right now, or is presenting problems, please comback later.'))
+                messages.error(
+                    self.request,
+                    _(u'WebPay is not available right now, or is presenting problems, please comeback later.'))
                 return reverse("basket:summary")
 
 
@@ -125,11 +119,10 @@ class WebPayRedirectForm(TemplateView):
     template_name = 'oscar_webpay/checkout/webpay_form.html'
 
     def get(self, request, *args, **kwargs):
-        ctx = dict({
-            'url': self.request.session['webpay-payment-url'],
-            'token': self.request.session['webpay-payment-token'],
-            'currency': self.request.session['webpay-payment-currency']
-        })
+        ctx = dict(
+            ('url', self.kwargs['url']),
+            ('token', self.kwargs['token'])
+        )
         return render(request, self.template_name, ctx)
 
 
@@ -316,7 +309,7 @@ class WebPayEndRedirect(RedirectView):
             messages.info(self.request, msg)
             return reverse("basket:summary")
         else:
-           return reverse('webpay-txns')
+            return reverse('webpay-txns')
 
 
 @method_decorator(csrf_exempt, name='dispatch')
