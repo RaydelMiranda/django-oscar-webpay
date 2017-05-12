@@ -119,10 +119,10 @@ class WebPayRedirectForm(TemplateView):
     template_name = 'oscar_webpay/checkout/webpay_form.html'
 
     def get(self, request, *args, **kwargs):
-        ctx = dict(
+        ctx = dict([
             ('url', self.kwargs['url']),
             ('token', self.kwargs['token'])
-        )
+        ])
         return render(request, self.template_name, ctx)
 
 

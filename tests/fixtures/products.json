@@ -1,0 +1,20 @@
+[
+{
+    "model": "catalogue.product",
+    "pk": 3,
+    "fields": {
+        "structure": "standalone",
+        "upc": "asdADSAS",
+        "parent": null,
+        "title": "El viejo y el mar",
+        "slug": "el-viejo-y-el-mar",
+        "description": "",
+        "product_class": 1,
+        "rating": null,
+        "date_created": "2017-05-11T20:36:54.332Z",
+        "date_updated": "2017-05-11T20:50:32.595Z",
+        "is_discountable": true,
+        "product_options": []
+    }
+}
+]

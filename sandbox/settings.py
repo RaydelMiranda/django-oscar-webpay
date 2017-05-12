@@ -190,12 +190,7 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.flatpages',
     'django.contrib.staticfiles',
-    # External apps
-    # 1.5.7 still ships with South migrations in the wrong folder,
-    # 1.5.8 contains a fix. Upgrade when released.
-    # 'django_extensions',
     'debug_toolbar',
-    # Apps from oscar
     'oscar_webpay',
     'compressor',
     'widget_tweaks',
@@ -244,12 +239,3 @@ HAYSTACK_CONNECTIONS = {
         'ENGINE': 'haystack.backends.simple_backend.SimpleEngine',
     },
 }
-
-
-# Put your own sandbox settings into an integration.py module (that is ignored
-# by git).
-try:
-    from integration import *  # noqa
-except ImportError:
-    pass
-

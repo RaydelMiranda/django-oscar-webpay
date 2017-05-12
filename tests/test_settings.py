@@ -31,6 +31,13 @@ WEBPAY_NORMAL = {
 
 SECRET_KEY = 'FALSE-KEY-000'
 
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'test.db',
+    }
+}
+
 INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.admin',
@@ -41,6 +48,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'oscar_webpay',
     'compressor',
+    'widget_tweaks',
 ] + get_core_apps()
 
 MIDDLEWARE_CLASSES = (

@@ -1,3 +1,5 @@
+import uuid
+
 from django.test import SimpleTestCase
 from django.core.urlresolvers import resolve
 
@@ -12,10 +14,12 @@ class TestUrls(SimpleTestCase):
         self.assertEqual(match._func_path, 'oscar_webpay.views.WebPayRedirectView')
 
     def test_webpay_form(self):
-        match = resolve('/test/webpay_form/url/token/')
+
+        token = str(uuid.uuid4())
+        match = resolve('/test/webpay_form/{}/{}/'.format('http://mocked_url-123.com', token))
         self.assertEqual(match.url_name, 'webpay-form')
         self.assertEqual(match.args, ())
-        self.assertEqual(match.kwargs, {'url': 'url', 'token': 'token'})
+        self.assertEqual(match.kwargs, {'url': 'http://mocked_url-123.com', 'token': token})
         self.assertEqual(match._func_path, 'oscar_webpay.views.WebPayRedirectForm')
 
     def test_webpay_success(self):
