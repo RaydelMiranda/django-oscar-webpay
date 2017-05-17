@@ -222,7 +222,7 @@ class WebPayPaymentSuccessView(PaymentDetailsView):
 
         # Record payment source and event
         source_type, is_created = SourceType.objects.get_or_create(
-            name='WebPay')
+            code="webpay-transbank", name=u"Tarjeta de crédito o redcompra (Transbank / Webpay plus)")
 
         basket = self.get_submitted_basket()
 
@@ -325,6 +325,8 @@ class WebPayThankYouView(ThankYouView):
 
     def get_context_data(self, **kwargs):
         ctx = super(WebPayThankYouView, self).get_context_data(**kwargs)
+
+
         ctx.update({
             # TypeTransactionResultOutput.cardDetail
             # -------------------------------------------
@@ -339,7 +341,8 @@ class WebPayThankYouView(ThankYouView):
             'webpay_amount': self.request.session['webpay_amount'],
             'webpay_commerce_code': self.request.session['webpay_commerce_code'],
             'webpay_buyOrder': self.request.session['webpay_buyOrder'],
-            'webpay_shares_number': self.request.session['webpay_shares_number'],
+            'webpay_shares_number': int(self.request.session['webpay_shares_number']),
+            'webpay_shares_amount': float(self.request.session['webpay_shares_amount']),
             'webpay_response_code': self.request.session['webpay_response_code'],
             'webpay_payment_type_code': self.request.session['webpay_payment_type_code'],
             # TypeTransactionResultOutput.cardDetails
@@ -348,6 +351,11 @@ class WebPayThankYouView(ThankYouView):
             # Card
             'webpay_card_expiration_date': self.request.session['webpay_card_expiration_date']
         })
+
+        if (int(self.request.session['webpay_shares_number']) > 0):
+            shares_amount = self.request.session['webpay_shares_amount']
+            shares_number = self.request.session['webpay_shares_number']
+            ctx.update({'cuotes': [float(shares_amount)] * int(shares_number)})
 
         return ctx
 
