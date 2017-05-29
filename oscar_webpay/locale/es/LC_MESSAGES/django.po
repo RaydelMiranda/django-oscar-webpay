@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-05-03 20:23-0400\n"
+"POT-Creation-Date: 2017-05-29 12:16-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -30,23 +30,95 @@ msgid "WebPay transactions"
 msgstr "Transacciones de WebPay"
 
 #: exceptions/common.py:7
-msgid "Shipping method expected, reveiced: {}"
-msgstr ""
-
-#: exceptions/common.py:13
-msgid "Shipping address expected, recived: {}"
+#, fuzzy
+#| msgid "Shipping address expected, recived: {}"
+msgid "Shipping method expected, received: {}"
 msgstr "Dirección de envío esperada, recibido {}"
 
-#: exceptions/common.py:30
+#: exceptions/common.py:13
+#, fuzzy
+#| msgid "Shipping address expected, recived: {}"
+msgid "Shipping address expected, received: {}"
+msgstr "Dirección de envío esperada, recibido {}"
+
+#: exceptions/common.py:29
 msgid "Unknown"
 msgstr "Desconocido"
 
-#: exceptions/common.py:30
-msgid "Failed transaction, motive: {}"
+#: exceptions/common.py:29
+#, fuzzy
+#| msgid "Failed transaction, motive: {}"
+msgid "Failed transaction motive: {}"
 msgstr "Transacción fallida, motivo: {}"
 
+#: exceptions/soap_exceptions.py:8 exceptions/soap_exceptions.py:33
+msgid "CVV Error, please check and try again"
+msgstr "Error de código CVV, por favor chequee e intente nuevamente"
+
+#: exceptions/soap_exceptions.py:13
+msgid "Card Error, please check and try again"
+msgstr "Error procesando datos de la tarjeta, por favor chequee e intente nuevamente"
+
+#: exceptions/soap_exceptions.py:17
+msgid "Your card has expired"
+msgstr "Su tarjeta a expirado"
+
+#: exceptions/soap_exceptions.py:21
+msgid "Wrong card type, please check and try again"
+msgstr "Error en el tipo de tarjeta, por favor chequee e intente nuevamente"
+
+#: exceptions/soap_exceptions.py:25
+msgid "Quota error, wrong number of cuotes, please check and try again"
+msgstr "Error en las cuotas, número invalido de cuotas, por favor chequee e intente nuevamente"
+
+#: exceptions/soap_exceptions.py:29
+msgid "Card Error, wrong number, please check and try again"
+msgstr "Error en tarjeta, número incorrecto, por favor chequee e intente nuevamente"
+
+#: exceptions/soap_exceptions.py:37
+msgid "Time limit exedeed, please check and try again"
+msgstr "Tiempo límite excedido, por favor chequee e intente nuevamente"
+
+#: exceptions/soap_exceptions.py:41
+msgid "Rut Error, please check and try again"
+msgstr "Código RUT erróneo, por favor chequee e intente nuevamente"
+
+#: exceptions/soap_exceptions.py:45
+msgid "Security code error"
+msgstr "Error en código de seguridad"
+
+#: exceptions/soap_exceptions.py:49
+#, fuzzy
+#| msgid "Error in transaction."
+msgid "Error in the expiration date"
+msgstr "Error de transacción."
+
+#: exceptions/soap_exceptions.py:53
+#, fuzzy
+#| msgid "Amount"
+msgid "Amount error"
+msgstr "Cantidad"
+
+#: exceptions/soap_exceptions.py:73
+msgid "The possible causes of this rejection are:"
+msgstr "Las posibles causas de rechazo son:"
+
+#: exceptions/soap_exceptions.py:74
+msgid ""
+"- Failure to enter the data of your Credit or Debit card (date and / or "
+"security code)."
+msgstr "- Error en el ingreso de los datos de su tarjeta de Crédito o Débito (fecha y/o código de seguridad)."
+
+#: exceptions/soap_exceptions.py:75
+msgid "- Your credit or debit card does not have enough balance."
+msgstr "- Su tarjeta de Crédito o Débito no cuenta con saldo suficiente."
+
+#: exceptions/soap_exceptions.py:76
+msgid "- Card not yet enabled in the financial system."
+msgstr "- Tarjeta aun no habilitada en el sistema financiero."
+
 #: libwebpay/webpay_capture.py:42 libwebpay/webpay_complete.py:42
-#: libwebpay/webpay_mall_normal.py:41 libwebpay/webpay_normal.py:41
+#: libwebpay/webpay_mall_normal.py:41 libwebpay/webpay_normal.py:47
 #: libwebpay/webpay_nullify.py:40 libwebpay/webpay_oneclick.py:42
 msgid "You must provide the ENVIRONMENTS variable for the settings"
 msgstr "Debe configurar la variable 'ENVIRONMENTS' en la configuración"
@@ -79,11 +151,11 @@ msgstr "N cuotas sin interés"
 msgid "Successful transaction"
 msgstr "Transacción satisfactoria"
 
-#: models.py:22 views.py:161 views.py:225
+#: models.py:22 views.py:178 views.py:194
 msgid "Failed transaction"
 msgstr "Transacción fallida"
 
-#: models.py:23 views.py:153 views.py:217
+#: models.py:23 views.py:170 views.py:186
 msgid "Time limit exceeded"
 msgstr "Tiempo límite excedido"
 
@@ -91,14 +163,14 @@ msgstr "Tiempo límite excedido"
 msgid "Transaction aborted by card holder"
 msgstr "Transacción abortada por el tarjeta-habiente"
 
-#: models.py:25 views.py:165 views.py:229
+#: models.py:25 views.py:182 views.py:198
 msgid "Authentication internal error"
 msgstr "Error interno de autenticación"
 
 #: models.py:28 templates/oscar_webpay/dashboard/transaction_detail.html:40
 #: templates/oscar_webpay/dashboard/transaction_list.html:35
 msgid "Token"
-msgstr ""
+msgstr "Token"
 
 #: models.py:29
 msgid "Buy order number"
@@ -141,7 +213,7 @@ msgstr "WebPay: {}"
 msgid "Pending payment"
 msgstr "Pago pendiente"
 
-#: oscar_webpay_settings.py:48
+#: oscar_webpay_settings.py:50
 msgid ""
 "You must set the configuration for all the enabled webpay modes\n"
 "Please configure WEBPAY_{} setting's variable."
@@ -150,11 +222,11 @@ msgstr ""
 "de WebPay\n"
 "Por favor, proporcione la configuración para la variable WEBPAY_{}."
 
-#: oscar_webpay_settings.py:58
+#: oscar_webpay_settings.py:60
 msgid "WEBPAY_{} \"{}\" setting has not been set."
 msgstr "La variable para WEBPAY_{}: \"{}\" no ha sido configurada."
 
-#: oscar_webpay_settings.py:62
+#: oscar_webpay_settings.py:64
 msgid "Oscar webpay do not support this mode: {}"
 msgstr "Oscar webpay no soporta el modo: {}"
 
@@ -219,64 +291,66 @@ msgstr "Fecha"
 msgid "No transactions have been made yet."
 msgstr "No se han hecho transacciones aún."
 
-#: views.py:122
+#: views.py:120
 msgid ""
 "WebPay is not available right now, or is presenting problems, please comback "
 "later."
 msgstr ""
-"WebPay no está disponible ahora, o está presentando problemas, por favor, intente luego."
+"WebPay no está disponible ahora, o está presentando problemas, por favor, "
+"intente luego."
 
-#: views.py:157 views.py:221 views.py:283
-msgid "Transaction canceled by cardholder"
-msgstr "Transacción cancelada por el tarjeta-habiente"
-
-#: views.py:177 views.py:180
-msgid "Transaction rejected."
-msgstr "Transacción rechazada."
-
-#: views.py:178
-msgid "Transaction submitted again."
-msgstr "Transacción reenviada."
-
-#: views.py:179
-msgid "Error in transaction."
-msgstr "Error de transacción."
-
-#: views.py:181
-msgid "Rejection by error of rate."
-msgstr "Rechazada por error en tasa."
-
-#: views.py:182
-msgid "Exceeds monthly maximum quota."
-msgstr "Máximo de cuota mensual excedido."
-
-#: views.py:183
-msgid "Exceeds daily limit per transaction."
-msgstr "Límite diaro por transacción excedido."
-
-#: views.py:184
-msgid "Unauthorized item."
-msgstr "Rubro no autorizado."
-
-#: views.py:203 views.py:260
+#: views.py:154 views.py:247
 msgid "Settled"
 msgstr "Pago confirmado"
 
-#: views.py:212
+#: views.py:163
 msgid "Payment transaction with WebPay"
 msgstr "Inicializando transacción con WebPay"
 
-#: views_old.py:103 views_old.py:237
-msgid "A problem occurred communicating with WebPay - please try again later"
-msgstr ""
-"Ha ocurrido un problema comunicando con WebPay, por favor trate de nuevo más "
-"tarde."
+#: views.py:164
+msgid "Something went wrong, plese try again later."
+msgstr "Algún error ha ocurrido, por favor trate mas tarde."
 
-#: views_old.py:158 views_old.py:177
-msgid "Confirmation pending"
-msgstr "Pendiente"
+#: views.py:174 views.py:190 views.py:315
+msgid "Transaction canceled by cardholder"
+msgstr "Transacción cancelada por el tarjeta-habiente"
 
-#: views_old.py:220 views_old.py:222 views_old.py:231
-msgid "Confirmed"
-msgstr "Pago confirmado"
+#: views.py:211 views.py:214
+msgid "Transaction rejected."
+msgstr "Transacción rechazada."
 
+#: views.py:212
+msgid "Transaction submitted again."
+msgstr "Transacción reenviada."
+
+#: views.py:213
+msgid "Error in transaction."
+msgstr "Error de transacción."
+
+#: views.py:215
+msgid "Rejection by error of rate."
+msgstr "Rechazada por error en tasa."
+
+#: views.py:216
+msgid "Exceeds monthly maximum quota."
+msgstr "Máximo de cuota mensual excedido."
+
+#: views.py:217
+msgid "Exceeds daily limit per transaction."
+msgstr "Límite diaro por transacción excedido."
+
+#: views.py:218
+msgid "Unauthorized item."
+msgstr "Rubro no autorizado."
+
+#~ msgid ""
+#~ "A problem occurred communicating with WebPay - please try again later"
+#~ msgstr ""
+#~ "Ha ocurrido un problema comunicando con WebPay, por favor trate de nuevo "
+#~ "más tarde."
+
+#~ msgid "Confirmation pending"
+#~ msgstr "Pendiente"
+
+#~ msgid "Confirmed"
+#~ msgstr "Pago confirmado"
