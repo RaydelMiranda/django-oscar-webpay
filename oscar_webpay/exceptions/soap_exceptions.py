@@ -40,9 +40,23 @@ class ERR_RUT(Exception):
     def __init__(self):
         self.message = _(u'Rut Error, please check and try again')
 
+class ERR_CCV(Exception):
+    def __init__(self):
+        self.message = _(u'Security code error')
+
+class ERR_EXPIRATION_DATE(Exception):
+    def __init__(self):
+        self.message = _(u'Error in the expiration date')
+
+class ERR_AMOUNT(Exception):
+    def __init__(self):
+        self.message = _(u'Amount error')
+
 class SOAPException(Exception):
 
     exceptions = {
+        25: ERR_EXPIRATION_DATE(),
+        33: ERR_AMOUNT(),
         52: CARDError(),
         86: OLDCARDError(),
         109: ERR_TBK_CARD(),
@@ -54,7 +68,17 @@ class SOAPException(Exception):
     }
 
     def __init__(self, error_code):
+
+        self.__generic_msg = \
+            _("The possible causes of this rejection are:") \
+            _("- Failure to enter the data of your Credit or Debit card (date and / or security code).")\
+            _("- Your credit or debit card does not have enough balance.") \
+            _("- Card not yet enabled in the financial system.")
+
+        self.message = self.__generic_msg
         self.__error_code = error_code
 
     def __call__(self):
-        return self.exceptions[self.__error_code]
+        if self.exceptions.get(self.__error_code, None) is not None:
+            return self.exceptions[self.__error_code]
+        return self

@@ -41,6 +41,8 @@ class OscarWebpaySettings(object):
             'COMMERCE_CODE',    # Well ...   Commerce code ;)
         ]
 
+        self.WEBPAY_LOG_REQUEST_AND_RESPONSE = False
+
         for mode in self.WEBPAY_ENABLED_MODES:
             if mode in self.__webpay_modes:
                 webpay_mode = getattr(settings, 'WEBPAY_{}'.format(mode), None)

@@ -29,6 +29,11 @@ from django.utils.translation import ugettext_lazy as _
 from oscar_webpay.oscar_webpay_settings import OscarWebpaySettingError
 
 
+from logging import getLogger
+
+logger = getLogger('oscar_webpay.transactions')
+
+
 class Dictionaries():
     """
 	Configuracion de WSDL segun ambiente
@@ -54,6 +59,13 @@ class WebpayNormal():
         global url;
         url = dictWsdl[self.__config.getEnvironment()];
         self.__url = url;
+
+    @staticmethod
+    def log_webpay_traffic(client, msg=""):
+        logger.info("\n{}\n".format('='*100))
+        logger.info(client.last_sent())
+        logger.info("\n{}\n".format('='*100))
+        logger.info(client.last_received())
 
     """
 	initTransaction
@@ -88,7 +100,11 @@ class WebpayNormal():
 
         wsInitTransactionOutput = client.service.initTransaction(init);
 
+        WebpayNormal.log_webpay_traffic(client)
+
         return wsInitTransactionOutput;
+
+
 
     """
 	getTransaction
@@ -103,10 +119,13 @@ class WebpayNormal():
         #client.options.cache.clear();
         transactionResultOutput = client.service.getTransactionResult(token);
         # acknowledge = WebpayNormal.acknowledgeTransaction(token);
+
+        WebpayNormal.log_webpay_traffic(client)
         return transactionResultOutput;
 
     def acknowledgeTransaction(self, token):
         acknowledge = WebpayNormal.acknowledgeTransaction(token);
+
         return acknowledge
 
     """
@@ -120,6 +139,7 @@ class WebpayNormal():
         #client.options.cache.clear();
 
         acknowledge = client.service.acknowledgeTransaction(token);
+        WebpayNormal.log_webpay_traffic(client)
 
         return acknowledge;
 

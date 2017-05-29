@@ -118,7 +118,7 @@ class WebPayRedirectView(CheckoutSessionMixin, RedirectView):
             else:
                 # Something was wrong!!!  Call 911 !!!
                 messages.error(self.request, _(u'WebPay is not available right now, or is presenting problems, please comback later.'))
-                return reverse("basket:summary")
+                return reverse("webpay-fail")
 
 
 class WebPayRedirectForm(TemplateView):
@@ -314,9 +314,9 @@ class WebPayEndRedirect(RedirectView):
         if self.request.POST.get('TBK_TOKEN', False):
             msg = _(u"Transaction canceled by cardholder")
             messages.info(self.request, msg)
-            return reverse("basket:summary")
+            return reverse("webpay-fail", args=(self.request.session['order_number'], msg))
         else:
-           return reverse('webpay-txns')
+            return reverse('webpay-txns')
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -362,7 +362,7 @@ class WebPayThankYouView(ThankYouView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class WebPayFail(View):
-    template_name = "checkout/payment_fail.html"
+    template_name = "checkout/payment_failed.html"
 
     def get_context_data(self, **kwargs):
         ctx = super(WebPayFail, self).get_context_data(**kwargs)
