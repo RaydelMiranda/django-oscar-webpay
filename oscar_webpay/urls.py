@@ -3,7 +3,8 @@ from oscar_webpay import views
 
 
 urlpatterns = [
-    url(r'^webpay_redirect/(?P<return_url_name>(\w|-)+)/(?P<final_url_name>(\w|\-)+)/$', views.WebPayRedirectView.as_view(),
+    url(r'^webpay_redirect/(?P<return_url_name>(\w|[/:.-]|\d)+)/(?P<final_url_name>(\w|[/:.-]|\d)+)/$',
+        views.WebPayRedirectView.as_view(),
         name='webpay-redirect'),
     url(r'^webpay_form/(?P<url>(\w|[/:.-]|\d)+)/(?P<token>(\w|-|\d)+)/$', views.WebPayRedirectForm.as_view(), name='webpay-form'),
     url(r'^webpay_success/$', views.WebPayPaymentSuccessView.as_view(), name='webpay-success'),
