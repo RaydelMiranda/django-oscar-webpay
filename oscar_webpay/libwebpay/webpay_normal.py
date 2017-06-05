@@ -28,6 +28,7 @@ from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 from oscar_webpay.oscar_webpay_settings import OscarWebpaySettingError
 
+from wsse.exceptions import  SignatureVerificationFailed
 
 from logging import getLogger
 
@@ -98,12 +99,13 @@ class WebpayNormal():
         init.transactionDetails.append(detail);
         init.wPMDetail = client.factory.create('wpmDetailInput');
 
-        wsInitTransactionOutput = client.service.initTransaction(init);
-
+        try:
+            wsInitTransactionOutput = client.service.initTransaction(init);
+        except SignatureVerificationFailed as e:
+            raise
         WebpayNormal.log_webpay_traffic(client)
 
         return wsInitTransactionOutput;
-
 
 
     """
