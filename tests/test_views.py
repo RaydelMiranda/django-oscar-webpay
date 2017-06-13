@@ -5,6 +5,7 @@ from django.test import TestCase
 from django.core.urlresolvers import reverse
 from oscar.core.loading import get_model
 
+from oscar_webpay import views
 
 Basket = get_model('basket', 'Basket')
 
