@@ -60,7 +60,7 @@ def confirm_transaction(token):
         raise FailedTransaction(result)
 
     if result.VCI == 'TO':
-        # Time limit exceeeded.
+        # Time limit exceeded.
         raise TimeLimitExceeded
 
     if result.VCI == 'ABO':
@@ -73,7 +73,8 @@ def confirm_transaction(token):
 
     return result
 
-def  acknowledge_transaction(token):
+
+def acknowledge_transaction(token):
     webpay = Webpay(get_webpay_conf())
     result = webpay.getNormalTransaction().acknowledgeTransaction(token)
     return result
