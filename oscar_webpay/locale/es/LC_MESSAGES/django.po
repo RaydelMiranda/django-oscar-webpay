@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-05-29 12:16-0400\n"
+"POT-Creation-Date: 2017-06-26 11:25-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -51,74 +51,72 @@ msgstr "Desconocido"
 msgid "Failed transaction motive: {}"
 msgstr "Transacción fallida, motivo: {}"
 
-#: exceptions/soap_exceptions.py:8 exceptions/soap_exceptions.py:33
+#: exceptions/soap_exceptions.py:7 exceptions/soap_exceptions.py:38
 msgid "CVV Error, please check and try again"
 msgstr "Error de código CVV, por favor chequee e intente nuevamente"
 
 #: exceptions/soap_exceptions.py:13
 msgid "Card Error, please check and try again"
-msgstr "Error procesando datos de la tarjeta, por favor chequee e intente nuevamente"
+msgstr ""
+"Error procesando datos de la tarjeta, por favor chequee e intente nuevamente"
 
-#: exceptions/soap_exceptions.py:17
+#: exceptions/soap_exceptions.py:18
 msgid "Your card has expired"
 msgstr "Su tarjeta a expirado"
 
-#: exceptions/soap_exceptions.py:21
+#: exceptions/soap_exceptions.py:23
 msgid "Wrong card type, please check and try again"
 msgstr "Error en el tipo de tarjeta, por favor chequee e intente nuevamente"
 
-#: exceptions/soap_exceptions.py:25
+#: exceptions/soap_exceptions.py:28
 msgid "Quota error, wrong number of cuotes, please check and try again"
-msgstr "Error en las cuotas, número invalido de cuotas, por favor chequee e intente nuevamente"
+msgstr ""
+"Error en las cuotas, número invalido de cuotas, por favor chequee e intente "
+"nuevamente"
 
-#: exceptions/soap_exceptions.py:29
+#: exceptions/soap_exceptions.py:33
 msgid "Card Error, wrong number, please check and try again"
-msgstr "Error en tarjeta, número incorrecto, por favor chequee e intente nuevamente"
+msgstr ""
+"Error en tarjeta, número incorrecto, por favor chequee e intente nuevamente"
 
-#: exceptions/soap_exceptions.py:37
+#: exceptions/soap_exceptions.py:43
 msgid "Time limit exedeed, please check and try again"
 msgstr "Tiempo límite excedido, por favor chequee e intente nuevamente"
 
-#: exceptions/soap_exceptions.py:41
+#: exceptions/soap_exceptions.py:48
 msgid "Rut Error, please check and try again"
 msgstr "Código RUT erróneo, por favor chequee e intente nuevamente"
 
-#: exceptions/soap_exceptions.py:45
+#: exceptions/soap_exceptions.py:53
 msgid "Security code error"
 msgstr "Error en código de seguridad"
 
-#: exceptions/soap_exceptions.py:49
+#: exceptions/soap_exceptions.py:58
 #, fuzzy
 #| msgid "Error in transaction."
 msgid "Error in the expiration date"
 msgstr "Error de transacción."
 
-#: exceptions/soap_exceptions.py:53
+#: exceptions/soap_exceptions.py:63
 #, fuzzy
 #| msgid "Amount"
 msgid "Amount error"
 msgstr "Cantidad"
 
-#: exceptions/soap_exceptions.py:73
-msgid "The possible causes of this rejection are:"
-msgstr "Las posibles causas de rechazo son:"
-
-#: exceptions/soap_exceptions.py:74
+#: exceptions/soap_exceptions.py:84
 msgid ""
-"- Failure to enter the data of your Credit or Debit card (date and / or "
-"security code)."
-msgstr "- Error en el ingreso de los datos de su tarjeta de Crédito o Débito (fecha y/o código de seguridad)."
-
-#: exceptions/soap_exceptions.py:75
-msgid "- Your credit or debit card does not have enough balance."
-msgstr "- Su tarjeta de Crédito o Débito no cuenta con saldo suficiente."
-
-#: exceptions/soap_exceptions.py:76
-msgid "- Card not yet enabled in the financial system."
-msgstr "- Tarjeta aun no habilitada en el sistema financiero."
+"The possible causes of this rejection are:- Failure to enter the data of "
+"your Credit or Debit card (date and / or security code).- Your credit or "
+"debit card does not have enough balance.- Card not yet enabled in the "
+"financial system"
+msgstr ""
+"Las posibles causas de este rechazo son: - Error en la introducción los datos de"
+"su tarjeta de crédito o débito (fecha y / o código de seguridad) .- Su tarjeta de crédito o "
+"débito no tiene suficiente dinero.- La tarjeta aún no está habilitada en el"
+"sistema financiero"
 
 #: libwebpay/webpay_capture.py:42 libwebpay/webpay_complete.py:42
-#: libwebpay/webpay_mall_normal.py:41 libwebpay/webpay_normal.py:47
+#: libwebpay/webpay_mall_normal.py:41 libwebpay/webpay_normal.py:48
 #: libwebpay/webpay_nullify.py:40 libwebpay/webpay_oneclick.py:42
 msgid "You must provide the ENVIRONMENTS variable for the settings"
 msgstr "Debe configurar la variable 'ENVIRONMENTS' en la configuración"
@@ -342,6 +340,22 @@ msgstr "Límite diaro por transacción excedido."
 #: views.py:218
 msgid "Unauthorized item."
 msgstr "Rubro no autorizado."
+
+#~ msgid "The possible causes of this rejection are:"
+#~ msgstr "Las posibles causas de rechazo son:"
+
+#~ msgid ""
+#~ "- Failure to enter the data of your Credit or Debit card (date and / or "
+#~ "security code)."
+#~ msgstr ""
+#~ "- Error en el ingreso de los datos de su tarjeta de Crédito o Débito "
+#~ "(fecha y/o código de seguridad)."
+
+#~ msgid "- Your credit or debit card does not have enough balance."
+#~ msgstr "- Su tarjeta de Crédito o Débito no cuenta con saldo suficiente."
+
+#~ msgid "- Card not yet enabled in the financial system."
+#~ msgstr "- Tarjeta aun no habilitada en el sistema financiero."
 
 #~ msgid ""
 #~ "A problem occurred communicating with WebPay - please try again later"
