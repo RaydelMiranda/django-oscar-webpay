@@ -31,7 +31,7 @@
                 <tr>
                     <th>{% trans "Correlation ID" %}</th>
                     <th>{% trans "Method" %}</th>
-                    <th>{% trans "Result" %}</th>
+                    <th>{% trans "Amount" %}</th>
                     <th>{% trans "Token" %}</th>
                     <th>{% trans "Authorization code" %}</th>
                     <th>{% trans "Card number" %}</th>
@@ -44,13 +44,13 @@
                 {% for txn in transactions %}
                     <tr>
                         <td><a href="{% url 'webpay-transaction-detail' txn.id %}">{{ txn.id|default:"-" }}</a></td>
-                        <td>{{ txn.method }}</td>
-                        <td>{{ txn.amount|currency:txn.currency }}</td>
+                        <td>{{ txn.get_transaction_type_display }}</td>
+                        <td>{{ txn.base_transaction.amount }}</td>
                         <td>{{ txn.token|default:'-' }}</td>
-                        <td>{{ txn.error_code|default:'-' }}</td>
                         <td>{{ txn.auth_code|default:'-' }}</td>
                         <td>{{ txn.card_number|default:'-' }}</td>
-                        <td>{{ txn.error_code.display|default:'-' }}</td>
+                        <td>{{ txn.error_auth_code|default:'-' }}</td>
+                        <td>{{ txn.get_error_auth_code_display|default:'-' }}</td>
                         <td>{{ txn.date_created }}</td>
                     </tr>
                 {% endfor %}
