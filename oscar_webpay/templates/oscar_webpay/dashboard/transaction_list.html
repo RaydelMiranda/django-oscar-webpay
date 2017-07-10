@@ -29,7 +29,7 @@
         <table class="table table-striped table-bordered">
             <thead>
                 <tr>
-                    <th>{% trans "Correlation ID" %}</th>
+                    <th>{% trans "ID" %}</th>
                     <th>{% trans "Method" %}</th>
                     <th>{% trans "Amount" %}</th>
                     <th>{% trans "Token" %}</th>
@@ -51,7 +51,7 @@
                         <td>{{ txn.card_number|default:'-' }}</td>
                         <td>{{ txn.error_auth_code|default:'-' }}</td>
                         <td>{{ txn.get_error_auth_code_display|default:'-' }}</td>
-                        <td>{{ txn.date_created }}</td>
+                        <td>{{ txn.base_transaction.date_created }}</td>
                     </tr>
                 {% endfor %}
             </tbody>
