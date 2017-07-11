@@ -182,22 +182,6 @@ class WebPayPaymentSuccessView(PaymentDetailsView):
             error_msg = _(u"Authentication internal error")
             messages.error(self.request, error_msg)
             raise PaymentError(error_msg)
-        except TimeLimitExceeded as error:
-            error_msg = _(u"Time limit exceeded")
-            messages.error(self.request, error_msg)
-            raise PaymentError(error_msg)
-        except AbortedTransactionByCardHolder as error:
-            error_msg = _(u"Transaction canceled by cardholder")
-            messages.info(self.request, error_msg)
-            raise PaymentError(error_msg)
-        except FailedTransaction as error:
-            error_msg = _(u"Failed transaction")
-            messages.error(self.request, error_msg)
-            raise PaymentError(error_msg)
-        except U3Exception as error:
-            error_msg = _(u"Authentication internal error")
-            messages.error(self.request, error_msg)
-            raise PaymentError(error_msg)
         except Exception as unknown_error:
             # TODO: write a good logic here to handle all the 328 possible exceptions
             logger.error(six.text_type(unknown_error))
