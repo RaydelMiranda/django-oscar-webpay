@@ -91,7 +91,7 @@ class WebpayMallNormal():
             init.transactionDetails.append(detail)
 
         try:
-            wsInitTransactionOutput = client.service.initTransaction(init)
+            wsInitTransactionOutput = client.service.init_transaction(init)
         except Exception as e:
             str(e)
 
@@ -128,7 +128,7 @@ class WebpayMallNormal():
                                              config.getWebPayCert())
         client.options.cache.clear()
 
-        acknowledge = client.service.acknowledgeTransaction(token)
+        acknowledge = client.service.acknowledge_transaction(token)
 
         return acknowledge
 

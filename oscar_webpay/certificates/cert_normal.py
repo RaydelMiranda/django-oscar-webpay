@@ -6,15 +6,12 @@
   @version    2.0.1
 """
 
-import os
 from oscar_webpay.oscar_webpay_settings import oscar_webpay_settings
 
 class certDictionary():
     @staticmethod
     def dictionaryCert():
         certificate = dict()
-
-        # dir = os.path.dirname(__file__)
 
         """ ATENCION: Configurar modo de uso (INTEGRACION, CERTIFICACION o PRODUCCION) """
         certificate['environment'] = oscar_webpay_settings.WEBPAY_NORMAL['ACTIVE_ENVIRON']

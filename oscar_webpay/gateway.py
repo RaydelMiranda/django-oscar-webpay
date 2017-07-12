@@ -1,3 +1,22 @@
+"""
+Copyright (2017) Raydel Miranda 
+
+This file is part of Django Oscar WebPay.
+
+    Django Oscar WebPay is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Django Oscar WebPay is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Django Oscar WebPay.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
 from oscar_webpay.libwebpay.webpay import Webpay
 from oscar_webpay.certificates import cert_normal
 from oscar_webpay.libwebpay.configuration import Configuration
@@ -44,13 +63,13 @@ def get_webpay_client(order_number, total, return_url_name, final_url_name):
         reverse(return_url_name)
     )
 
-    initTransactionOutput = webpay.getNormalTransaction().initTransaction(amount, buy_order, session_id, return_url, final_url)
+    initTransactionOutput = webpay.getNormalTransaction().init_transaction(amount, buy_order, session_id, return_url, final_url)
     return initTransactionOutput
 
 
 def confirm_transaction(token):
     webpay = Webpay(get_webpay_conf())
-    result = webpay.getNormalTransaction().getTransaction(token)
+    result = webpay.getNormalTransaction().get_transaction(token)
 
     if result.VCI == 'TSY':
         # Successful transaction.
@@ -75,7 +94,7 @@ def confirm_transaction(token):
 
 def  acknowledge_transaction(token):
     webpay = Webpay(get_webpay_conf())
-    result = webpay.getNormalTransaction().acknowledgeTransaction(token)
+    result = webpay.getNormalTransaction().acknowledge_transaction(token)
     return result
 
 
