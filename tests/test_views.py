@@ -50,7 +50,7 @@ class TestWebPayRedirectViewsFail(TestWebPayViewsBase):
 
     @mock.patch('oscar.apps.order.utils.OrderNumberGenerator.order_number')
     @mock.patch('oscar_webpay.views.get_webpay_client', autospec=True)
-    def test_redirect_logic_fail(self, mock_order_number, mock_get_webpay_client):
+    def test_redirect_logic_fail(self, mock_get_webpay_client, mock_order_number):
         # Configuring mocks
         mock_order_number.return_value = 100000
         mock_get_webpay_client.side_effect = Exception('Intentional exception raised for get_webpay_client')

@@ -84,12 +84,11 @@ class WebPayRedirectView(CheckoutSessionMixin, RedirectView):
             if not shipping_method:
                 raise MissingShippingMethodException(shipping_method)
             total += shipping_method.calculate(basket)
-
         try:
             response = get_webpay_client(
                 order_number, total, self.kwargs['return_url_name'], self.kwargs['final_url_name']
             )
-        except Exception, unknown:
+        except Exception as unknown:
             messages.error(self.request, six.text_type(unknown))
             logger.error(six.text_type(unknown))
             return reverse("basket:summary")
