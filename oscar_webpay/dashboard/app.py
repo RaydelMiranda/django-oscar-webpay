@@ -13,8 +13,8 @@ class WebPayApplication(DashboardApplication):
 
     def get_urls(self):
         urls = [
-            url(r'^transactions/$', self.transaction_list.as_view(), name='webpay-transaction-list'),
-            url(r'^transactions/(?P<pk>\d+)$', self.transaction_detail.as_view(),
+            url(r'^webpay/transactions/$', self.transaction_list.as_view(), name='webpay-transaction-list'),
+            url(r'^webpay/transactions/(?P<pk>\d+)$', self.transaction_detail.as_view(),
                 name='webpay-transaction-detail'),
         ]
         return self.post_process_urls(urls)
