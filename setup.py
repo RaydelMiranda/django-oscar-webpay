@@ -15,7 +15,7 @@ except(IOError, ImportError):
 setup(
     name='django-oscar-webpay',
 
-    version='0.2.19',
+    version='0.2.20',
 
     description='An application for intagrating WebPay with oscar based e-commerce sites',
     long_description=long_description,
