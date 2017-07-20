@@ -1,7 +1,10 @@
 from django.db import models
+from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
+from django.contrib.contenttypes.fields import GenericRelation
 
 from oscar.core.loading import get_model
+
 
 Transaction = get_model('payment', 'Transaction')
 CoreSource = get_model('payment', 'Source')
@@ -9,7 +12,7 @@ CoreSource = get_model('payment', 'Source')
 
 class WebPayTransaction(models.Model):
 
-    base_transaction = models.OneToOneField(Transaction, related_name='webpay_transaction_data')
+    base_transaction = GenericRelation(Transaction)
 
     TRANSACTION_TYPE_CHOICES = (
         ('VD', _(u'Debit sale')),
@@ -44,6 +47,9 @@ class WebPayTransaction(models.Model):
 
     def method(self):
         return _("WebPay: {}".format(self.transaction_type.display()))
+
+    def get_absolute_url(self):
+        return reverse('webpay-transaction-detail', kwargs={'pk': str(self.pk)})
 
 
 class WebPaySource(CoreSource):
@@ -96,9 +102,12 @@ class WebPaySource(CoreSource):
     def _create_transaction(self, txn_type, amount, reference='',
                             status='', webpay_transaction_data=None):
 
-        txn = self.transactions.create(
-            txn_type=txn_type, amount=amount,
-            reference=reference, status=status)
+        wp_txn = None
 
         if webpay_transaction_data is not None:
-            WebPayTransaction.objects.create(base_transaction=txn, **webpay_transaction_data)
+            wp_txn = WebPayTransaction.objects.create(**webpay_transaction_data)
+
+        txn = self.transactions.create(
+            transaction_data=wp_txn,
+            txn_type=txn_type, amount=amount,
+            reference=reference, status=status)
