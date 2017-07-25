@@ -107,7 +107,7 @@ class WebPaySource(CoreSource):
         if webpay_transaction_data is not None:
             wp_txn = WebPayTransaction.objects.create(**webpay_transaction_data)
 
-        txn = self.transactions.create(
-            transaction_data=wp_txn,
-            txn_type=txn_type, amount=amount,
-            reference=reference, status=status)
+            txn = self.transactions.create(
+                transaction_data=wp_txn,
+                txn_type=txn_type, amount=amount,
+                reference=reference, status=status)
