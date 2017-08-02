@@ -24,11 +24,23 @@ class WebPayTransaction(models.Model):
     )
 
     TRANSACTION_ERROR_CODE_CHOICES = (
-        ('TSY', _(u"Successful transaction")),
-        ('TSN', _(u"Failed transaction")),
+        ('TSY', _(u"Successful authentication")),
+        ('TSN', _(u"Failed authentication")),
         ('TO', _(u"Time limit exceeded")),
         ('ABO', _(u"Transaction aborted by card holder")),
         ('U3', _(u"Authentication internal error")),
+    )
+
+    RESULT_AUTHORIZATION_CODE = (
+        (0, _(u"Approved transaction")),
+        (-1, _(u"Transaction rejected.")),
+        (-2, _(u"Transaction submitted again.")),
+        (-3, _(u"Error in transaction.")),
+        (-4, _(u"Transaction rejected.")),
+        (-5, _(u"Rejection by error of rate.")),
+        (-6, _(u"Exceeds monthly maximum quota.")),
+        (-7, _(u"Exceeds daily limit per transaction.")),
+        (-8, _(u"Unauthorized item."))
     )
 
     # In oscar transactions this attribute points to 'payment.Source',
@@ -41,12 +53,25 @@ class WebPayTransaction(models.Model):
     currency = models.CharField(_(u"Currency"), max_length=3)
     auth_code = models.CharField(_(u"Authorization code"), max_length=6, null=True)
     card_number = models.CharField(_(u"Card number"), max_length=4, null=True)
-
-    error_auth_code = models.CharField(_(u"Error code"), max_length=3, choices=TRANSACTION_ERROR_CODE_CHOICES, null=True)
+    result_auth_code = models.IntegerField(_(u"Result authentication code"), choices=RESULT_AUTHORIZATION_CODE, null=True, blank=True)
+    error_auth_code = models.CharField(_(u"Result authentication code"), max_length=3, choices=TRANSACTION_ERROR_CODE_CHOICES, null=True)
     transaction_type = models.CharField(_(u"Transaction type"), max_length=255, choices=TRANSACTION_TYPE_CHOICES, null=True)
 
     def method(self):
         return _("WebPay: {}".format(self.transaction_type.display()))
+
+    @staticmethod
+    def get_transaction_type_by_code(code):
+        rel_code_desc = {
+            'VD': _(u'Debit sale'),
+            'VN': _(u'Normal sale'),
+            'VC': _(u'Quota sale'),
+            'SI': _(u'3 non-interest installments'),
+            'S2': _(u'2 non-interest installments'),
+            'NC': _(u'N non-interes installments')
+        }
+        return rel_code_desc[code]
+
 
     def get_absolute_url(self):
         return reverse('webpay-transaction-detail', kwargs={'pk': str(self.pk)})
@@ -68,7 +93,7 @@ class WebPaySource(CoreSource):
     def create_deferred_transaction(self, txn_type, amount, reference=None,
                                     status=None, token=None, buy_order=None, commerce_code=None,
                                     installments_amount=None, currency=None, auth_code=None, card_number=None,
-                                    error_auth_code=None, transaction_type=None):
+                                    error_auth_code=None, transaction_type=None, result_authorization_code=None):
         """
         Register the data for a transaction that can't be created yet due to FK
         constraints.  This happens at checkout where create an payment source
@@ -89,12 +114,13 @@ class WebPaySource(CoreSource):
                     'token': token,
                     'buy_order': buy_order,
                     'commerce_code': commerce_code,
-                    'installments_amount': installments_amount.incl_tax,
+                    'installments_amount': installments_amount,
                     'currency': currency,
                     'auth_code': auth_code,
                     'card_number': card_number,
                     'error_auth_code': error_auth_code,
-                    'transaction_type': transaction_type
+                    'transaction_type': transaction_type,
+                    'result_auth_code': result_authorization_code
                 }
             }
         )

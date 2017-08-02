@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-06-26 11:25-0400\n"
+"POT-Creation-Date: 2017-07-31 17:30-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,11 +18,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: __init__.py:13
+#: __init__.py:15
 msgid "WebPay"
 msgstr ""
 
-#: __init__.py:17 templates/oscar_webpay/dashboard/transaction_detail.html:19
+#: __init__.py:19 templates/oscar_webpay/dashboard/transaction_detail.html:19
 #: templates/oscar_webpay/dashboard/transaction_list.html:6
 #: templates/oscar_webpay/dashboard/transaction_list.html:18
 #: templates/oscar_webpay/dashboard/transaction_list.html:23
@@ -110,10 +110,10 @@ msgid ""
 "debit card does not have enough balance.- Card not yet enabled in the "
 "financial system"
 msgstr ""
-"Las posibles causas de este rechazo son: - Error en la introducción los datos de"
-"su tarjeta de crédito o débito (fecha y / o código de seguridad) .- Su tarjeta de crédito o "
-"débito no tiene suficiente dinero.- La tarjeta aún no está habilitada en el"
-"sistema financiero"
+"Las posibles causas de este rechazo son: - Error en la introducción los "
+"datos desu tarjeta de crédito o débito (fecha y / o código de seguridad) .- "
+"Su tarjeta de crédito o débito no tiene suficiente dinero.- La tarjeta aún "
+"no está habilitada en elsistema financiero"
 
 #: libwebpay/webpay_capture.py:42 libwebpay/webpay_complete.py:42
 #: libwebpay/webpay_mall_normal.py:41 libwebpay/webpay_normal.py:48
@@ -121,89 +121,127 @@ msgstr ""
 msgid "You must provide the ENVIRONMENTS variable for the settings"
 msgstr "Debe configurar la variable 'ENVIRONMENTS' en la configuración"
 
-#: models.py:12
+#: models.py:18
 msgid "Debit sale"
 msgstr "Venta a débito"
 
-#: models.py:13
+#: models.py:19
 msgid "Normal sale"
 msgstr "Venta normal"
 
-#: models.py:14
+#: models.py:20
 msgid "Quota sale"
 msgstr "Venta a cuotas"
 
-#: models.py:15
+#: models.py:21
 msgid "3 non-interest installments"
 msgstr "3 cuotas sin interés"
 
-#: models.py:16
+#: models.py:22
 msgid "2 non-interest installments"
 msgstr "2 cuotas sin interés"
 
-#: models.py:17
+#: models.py:23
 msgid "N non-interes installments"
 msgstr "N cuotas sin interés"
 
-#: models.py:21
-msgid "Successful transaction"
-msgstr "Transacción satisfactoria"
+#: models.py:27
+msgid "Successful authentication"
+msgstr "Autenticación satisfactoria"
 
-#: models.py:22 views.py:178 views.py:194
-msgid "Failed transaction"
-msgstr "Transacción fallida"
+#: models.py:28
+msgid "Failed authentication"
+msgstr "Autenticación fallida"
 
-#: models.py:23 views.py:170 views.py:186
+#: models.py:29 views.py:170
 msgid "Time limit exceeded"
 msgstr "Tiempo límite excedido"
 
-#: models.py:24
+#: models.py:30
 msgid "Transaction aborted by card holder"
 msgstr "Transacción abortada por el tarjeta-habiente"
 
-#: models.py:25 views.py:182 views.py:198
+#: models.py:31 views.py:182
 msgid "Authentication internal error"
 msgstr "Error interno de autenticación"
 
-#: models.py:28 templates/oscar_webpay/dashboard/transaction_detail.html:40
+#: models.py:35
+msgid "Approved transaction"
+msgstr "Transacción aprobada"
+
+#: models.py:36 models.py:39 views.py:195 views.py:198
+msgid "Transaction rejected."
+msgstr "Transacción rechazada."
+
+#: models.py:37 views.py:196
+msgid "Transaction submitted again."
+msgstr "Transacción reenviada."
+
+#: models.py:38 views.py:197
+msgid "Error in transaction."
+msgstr "Error de transacción."
+
+#: models.py:40 views.py:199
+msgid "Rejection by error of rate."
+msgstr "Rechazada por error en tasa."
+
+#: models.py:41 views.py:200
+msgid "Exceeds monthly maximum quota."
+msgstr "Máximo de cuota mensual excedido."
+
+#: models.py:42 views.py:201
+msgid "Exceeds daily limit per transaction."
+msgstr "Límite diaro por transacción excedido."
+
+#: models.py:43 views.py:202
+msgid "Unauthorized item."
+msgstr "Rubro no autorizado."
+
+#: models.py:49 templates/oscar_webpay/dashboard/transaction_detail.html:39
 #: templates/oscar_webpay/dashboard/transaction_list.html:35
 msgid "Token"
 msgstr "Token"
 
-#: models.py:29
+#: models.py:50
 msgid "Buy order number"
 msgstr "Número de orden"
 
-#: models.py:30
+#: models.py:51
 msgid "Commerce code"
 msgstr "Código de comercio"
 
-#: models.py:31
+#: models.py:52
 msgid "Installments amount"
 msgstr "Cantidad de cuotas"
 
-#: models.py:32 templates/oscar_webpay/dashboard/transaction_detail.html:38
+#: models.py:53 templates/oscar_webpay/dashboard/transaction_detail.html:38
 msgid "Currency"
 msgstr "Moneda"
 
-#: models.py:33 templates/oscar_webpay/dashboard/transaction_list.html:36
+#: models.py:54 templates/oscar_webpay/dashboard/transaction_list.html:36
 msgid "Authorization code"
 msgstr "Código de autorización"
 
-#: models.py:34 templates/oscar_webpay/dashboard/transaction_list.html:37
+#: models.py:55 templates/oscar_webpay/dashboard/transaction_list.html:37
 msgid "Card number"
 msgstr "Número de tarjeta"
 
-#: models.py:36 templates/oscar_webpay/dashboard/transaction_detail.html:41
+#: models.py:56
+#, fuzzy
+#| msgid "Authorization code"
+msgid "Result authentication code"
+msgstr "Código del resulta de la autenticación"
+
+#: models.py:57 templates/oscar_webpay/dashboard/transaction_detail.html:40
 #: templates/oscar_webpay/dashboard/transaction_list.html:38
 msgid "Error code"
 msgstr "Código de error"
 
-#: models.py:37
+#: models.py:58
 msgid "Transaction type"
 msgstr "Tipo de transacción"
 
-#: models.py:40
+#: models.py:61
 msgid "WebPay: {}"
 msgstr "WebPay: {}"
 
@@ -250,8 +288,8 @@ msgstr ""
 
 #: templates/oscar_webpay/dashboard/transaction_detail.html:35
 #: templates/oscar_webpay/dashboard/transaction_list.html:32
-msgid "Correlation ID"
-msgstr "ID de correlación"
+msgid "ID"
+msgstr ""
 
 #: templates/oscar_webpay/dashboard/transaction_detail.html:36
 #: templates/oscar_webpay/dashboard/transaction_list.html:33
@@ -259,28 +297,16 @@ msgid "Method"
 msgstr "Método"
 
 #: templates/oscar_webpay/dashboard/transaction_detail.html:37
+#: templates/oscar_webpay/dashboard/transaction_list.html:34
 msgid "Amount"
 msgstr "Cantidad"
 
-#: templates/oscar_webpay/dashboard/transaction_detail.html:39
-#: templates/oscar_webpay/dashboard/transaction_list.html:34
-msgid "Result"
-msgstr "Resultado"
-
-#: templates/oscar_webpay/dashboard/transaction_detail.html:42
+#: templates/oscar_webpay/dashboard/transaction_detail.html:41
 #: templates/oscar_webpay/dashboard/transaction_list.html:39
 msgid "Error message"
 msgstr "Mensage del error"
 
-#: templates/oscar_webpay/dashboard/transaction_detail.html:43
-msgid "Request params"
-msgstr "Parámetros de la petición"
-
 #: templates/oscar_webpay/dashboard/transaction_detail.html:44
-msgid "Response params"
-msgstr "Párametros de respuesta"
-
-#: templates/oscar_webpay/dashboard/transaction_detail.html:45
 #: templates/oscar_webpay/dashboard/transaction_list.html:40
 msgid "Date"
 msgstr "Fecha"
@@ -297,7 +323,7 @@ msgstr ""
 "WebPay no está disponible ahora, o está presentando problemas, por favor, "
 "intente luego."
 
-#: views.py:154 views.py:247
+#: views.py:154 views.py:231
 msgid "Settled"
 msgstr "Pago confirmado"
 
@@ -309,37 +335,25 @@ msgstr "Inicializando transacción con WebPay"
 msgid "Something went wrong, plese try again later."
 msgstr "Algún error ha ocurrido, por favor trate mas tarde."
 
-#: views.py:174 views.py:190 views.py:315
+#: views.py:174 views.py:299
 msgid "Transaction canceled by cardholder"
 msgstr "Transacción cancelada por el tarjeta-habiente"
 
-#: views.py:211 views.py:214
-msgid "Transaction rejected."
-msgstr "Transacción rechazada."
+#: views.py:178
+msgid "Failed transaction"
+msgstr "Transacción fallida"
 
-#: views.py:212
-msgid "Transaction submitted again."
-msgstr "Transacción reenviada."
+#~ msgid "Correlation ID"
+#~ msgstr "ID de correlación"
 
-#: views.py:213
-msgid "Error in transaction."
-msgstr "Error de transacción."
+#~ msgid "Result"
+#~ msgstr "Resultado"
 
-#: views.py:215
-msgid "Rejection by error of rate."
-msgstr "Rechazada por error en tasa."
+#~ msgid "Request params"
+#~ msgstr "Parámetros de la petición"
 
-#: views.py:216
-msgid "Exceeds monthly maximum quota."
-msgstr "Máximo de cuota mensual excedido."
-
-#: views.py:217
-msgid "Exceeds daily limit per transaction."
-msgstr "Límite diaro por transacción excedido."
-
-#: views.py:218
-msgid "Unauthorized item."
-msgstr "Rubro no autorizado."
+#~ msgid "Response params"
+#~ msgstr "Párametros de respuesta"
 
 #~ msgid "The possible causes of this rejection are:"
 #~ msgstr "Las posibles causas de rechazo son:"
