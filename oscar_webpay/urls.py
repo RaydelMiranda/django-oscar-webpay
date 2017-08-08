@@ -1,8 +1,8 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 from oscar_webpay import views
 
 
-urlpatterns = patterns(
+urlpatterns = [
     '',
     url(r'^webpay_redirect/(?P<return_url_name>\w|\-)+/(?P<final_url_name>\w|\-)+/$', views.WebPayRedirectView.as_view(),
         name='webpay-redirect'),
@@ -14,4 +14,4 @@ urlpatterns = patterns(
     url(r'^webpay_fail/$', views.WebPayFail.as_view(), name='webpay-fail'),
     url(r'^webpay_cancel/$', views.WebPayCancel.as_view(), name='webpay-cancel'),
     url(r'^webpay_end_redirect/$', views.WebPayEndRedirect.as_view(), name='webpay-end-redirect'),
-)
+]
