@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-07-31 17:30-0400\n"
+"POT-Creation-Date: 2017-08-11 16:18-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -30,24 +30,15 @@ msgid "WebPay transactions"
 msgstr "Transacciones de WebPay"
 
 #: exceptions/common.py:7
-#, fuzzy
 #| msgid "Shipping address expected, recived: {}"
 msgid "Shipping method expected, received: {}"
-msgstr "Dirección de envío esperada, recibido {}"
-
-#: exceptions/common.py:13
-#, fuzzy
-#| msgid "Shipping address expected, recived: {}"
-msgid "Shipping address expected, received: {}"
-msgstr "Dirección de envío esperada, recibido {}"
+msgstr "Dirección de envío esperada, recibido: {}"
 
 #: exceptions/common.py:29
 msgid "Unknown"
 msgstr "Desconocido"
 
 #: exceptions/common.py:29
-#, fuzzy
-#| msgid "Failed transaction, motive: {}"
 msgid "Failed transaction motive: {}"
 msgstr "Transacción fallida, motivo: {}"
 
@@ -92,16 +83,12 @@ msgid "Security code error"
 msgstr "Error en código de seguridad"
 
 #: exceptions/soap_exceptions.py:58
-#, fuzzy
-#| msgid "Error in transaction."
 msgid "Error in the expiration date"
-msgstr "Error de transacción."
+msgstr "Error en la fecha de expiración"
 
 #: exceptions/soap_exceptions.py:63
-#, fuzzy
-#| msgid "Amount"
 msgid "Amount error"
-msgstr "Cantidad"
+msgstr "Error en la cantidad"
 
 #: exceptions/soap_exceptions.py:84
 msgid ""
@@ -121,27 +108,27 @@ msgstr ""
 msgid "You must provide the ENVIRONMENTS variable for the settings"
 msgstr "Debe configurar la variable 'ENVIRONMENTS' en la configuración"
 
-#: models.py:18
+#: models.py:18 models.py:66
 msgid "Debit sale"
 msgstr "Venta a débito"
 
-#: models.py:19
+#: models.py:19 models.py:67
 msgid "Normal sale"
 msgstr "Venta normal"
 
-#: models.py:20
+#: models.py:20 models.py:68
 msgid "Quota sale"
 msgstr "Venta a cuotas"
 
-#: models.py:21
+#: models.py:21 models.py:69
 msgid "3 non-interest installments"
 msgstr "3 cuotas sin interés"
 
-#: models.py:22
+#: models.py:22 models.py:70
 msgid "2 non-interest installments"
 msgstr "2 cuotas sin interés"
 
-#: models.py:23
+#: models.py:23 models.py:71
 msgid "N non-interes installments"
 msgstr "N cuotas sin interés"
 
@@ -226,16 +213,9 @@ msgstr "Código de autorización"
 msgid "Card number"
 msgstr "Número de tarjeta"
 
-#: models.py:56
-#, fuzzy
-#| msgid "Authorization code"
+#: models.py:56 models.py:57
 msgid "Result authentication code"
-msgstr "Código del resulta de la autenticación"
-
-#: models.py:57 templates/oscar_webpay/dashboard/transaction_detail.html:40
-#: templates/oscar_webpay/dashboard/transaction_list.html:38
-msgid "Error code"
-msgstr "Código de error"
+msgstr "Código del resultado de la autenticación"
 
 #: models.py:58
 msgid "Transaction type"
@@ -244,6 +224,10 @@ msgstr "Tipo de transacción"
 #: models.py:61
 msgid "WebPay: {}"
 msgstr "WebPay: {}"
+
+#: models.py:80
+msgid "Transaction for order number: {}"
+msgstr "Transacción para el número de orden: {}"
 
 #: oscar_webpay_settings.py:27
 msgid "Pending payment"
@@ -300,6 +284,11 @@ msgstr "Método"
 #: templates/oscar_webpay/dashboard/transaction_list.html:34
 msgid "Amount"
 msgstr "Cantidad"
+
+#: templates/oscar_webpay/dashboard/transaction_detail.html:40
+#: templates/oscar_webpay/dashboard/transaction_list.html:38
+msgid "Error code"
+msgstr "Código de error"
 
 #: templates/oscar_webpay/dashboard/transaction_detail.html:41
 #: templates/oscar_webpay/dashboard/transaction_list.html:39

@@ -76,6 +76,9 @@ class WebPayTransaction(models.Model):
     def get_absolute_url(self):
         return reverse('webpay-transaction-detail', kwargs={'pk': str(self.pk)})
 
+    def __str__(self):
+        return _(u'Transaction for order number: {}').format(self.buy_order)
+
 
 class WebPaySource(CoreSource):
     def __init__(self, *args, **kwargs):
