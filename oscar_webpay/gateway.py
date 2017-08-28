@@ -24,59 +24,56 @@ def get_webpay_conf():
     return configuration
 
 
-def get_webpay_client(order_number, total, return_url_name, final_url_name):
+class WebPayClient(object):
 
-    webpay = Webpay(get_webpay_conf())
+    def __init__(self):
+        self.webpay = Webpay(get_webpay_conf())
 
-    amount = total
-    buy_order = order_number
-    session_id = None
+    def get_webpay_client(self, order_number, total, return_url_name, final_url_name):
+        amount = total
+        buy_order = order_number
+        session_id = None
 
-    final_url = '{}:{}{}'.format(
-        oscar_webpay_settings.WEBPAY_RETURN_IP_ADDRESS,
-        oscar_webpay_settings.WEBPAY_RETURN_PORT,
-        reverse(final_url_name)
-    )
+        final_url = '{}:{}{}'.format(
+            oscar_webpay_settings.WEBPAY_RETURN_IP_ADDRESS,
+            oscar_webpay_settings.WEBPAY_RETURN_PORT,
+            reverse(final_url_name)
+        )
 
-    return_url = '{}:{}{}'.format(
-        oscar_webpay_settings.WEBPAY_RETURN_IP_ADDRESS,
-        oscar_webpay_settings.WEBPAY_RETURN_PORT,
-        reverse(return_url_name)
-    )
+        return_url = '{}:{}{}'.format(
+            oscar_webpay_settings.WEBPAY_RETURN_IP_ADDRESS,
+            oscar_webpay_settings.WEBPAY_RETURN_PORT,
+            reverse(return_url_name)
+        )
 
-    initTransactionOutput = webpay.getNormalTransaction().initTransaction(amount, buy_order, session_id, return_url, final_url)
-    return initTransactionOutput
+        initTransactionOutput = self.webpay.getNormalTransaction().initTransaction(
+            amount, buy_order, session_id, return_url, final_url)
+        return initTransactionOutput
 
+    def confirm_transaction(self, token):
+        result = self.webpay.getNormalTransaction().getTransaction(token)
 
-def confirm_transaction(token):
-    webpay = Webpay(get_webpay_conf())
-    result = webpay.getNormalTransaction().getTransaction(token)
+        if result.VCI == 'TSY':
+            # Successful transaction.
+            pass
 
-    if result.VCI == 'TSY':
-        # Successful transaction.
-        pass
+        if result.VCI == 'TSN':
+            raise FailedTransaction(result)
 
-    if result.VCI == 'TSN':
-        raise FailedTransaction(result)
+        if result.VCI == 'TO':
+            # Time limit exceeded.
+            raise TimeLimitExceeded
 
-    if result.VCI == 'TO':
-        # Time limit exceeded.
-        raise TimeLimitExceeded
+        if result.VCI == 'ABO':
+            # Failed transaction.
+            raise AbortedTransactionByCardHolder
 
-    if result.VCI == 'ABO':
-        # Failed transaction.
-        raise AbortedTransactionByCardHolder
+        if result.VCI == 'U3':
+            # Internal authentication error.
+            raise U3Exception
 
-    if result.VCI == 'U3':
-        # Internal authentication error.
-        raise U3Exception
+        return result
 
-    return result
-
-
-def acknowledge_transaction(token):
-    webpay = Webpay(get_webpay_conf())
-    result = webpay.getNormalTransaction().acknowledgeTransaction(token)
-    return result
-
-
+    def acknowledge_transaction(self, token):
+        result = self.webpay.getNormalTransaction().acknowledgeTransaction(token)
+        return result

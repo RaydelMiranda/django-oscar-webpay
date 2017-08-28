@@ -50,6 +50,7 @@ class Dictionaries():
         return config
 
 class WebpayNormal():
+
     def __init__(self, configuration):
         global config;
         config = configuration;
@@ -63,10 +64,15 @@ class WebpayNormal():
 
     @staticmethod
     def log_webpay_traffic(client, msg=""):
-        logger.info("\n{}\n".format('='*100))
-        logger.info(client.last_sent())
-        logger.info("\n{}\n".format('='*100))
-        logger.info(client.last_received())
+        if msg == "":
+            msg = \
+            """
+            {}
+            {}
+            {}
+            {}
+            """.format('='*100, client.last_sent(), '='*100, client.last_received())
+        logger.info(msg)
 
     """
 	initTransaction

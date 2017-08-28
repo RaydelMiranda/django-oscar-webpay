@@ -19,7 +19,7 @@ from django.views.generic import View, RedirectView, TemplateView, DetailView
 from django.core.urlresolvers import reverse
 
 from oscar.core.loading import get_class, get_model, get_classes
-from oscar_webpay.gateway import get_webpay_client, confirm_transaction, acknowledge_transaction
+from oscar_webpay.gateway import WebPayClient
 from oscar_webpay.oscar_webpay_settings import oscar_webpay_settings as ow_settings
 from oscar_webpay.models import WebPayTransaction
 
@@ -98,7 +98,7 @@ class WebPayRedirectView(CheckoutSessionMixin, RedirectView):
             total += decimal.Decimal(session_data.get_shipping_cost())
 
         try:
-            response = get_webpay_client(
+            response = WebPayClient().get_webpay_client(
                 order_number, total, 'webpay-success', 'webpay-end-redirect'
             )
         except Exception, unknown:
@@ -164,8 +164,9 @@ class WebPayPaymentSuccessView(PaymentDetailsView):
         generic_error_message = _(u"Something went wrong, plese try again later.")
 
         try:
-            confirmed_transaction = confirm_transaction(self.request.session['webpay-token'])
-            result = acknowledge_transaction(self.request.session['webpay-token'])
+            webpay_client = WebPayClient()
+            confirmed_transaction = webpay_client.confirm_transaction(self.request.session['webpay-token'])
+            result = webpay_client.acknowledge_transaction(self.request.session['webpay-token'])
         except TimeLimitExceeded as error:
             error_msg = _(u"Time limit exceeded")
             messages.error(self.request, error_msg)
