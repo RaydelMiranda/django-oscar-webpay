@@ -35,13 +35,13 @@ class WebPayClient(object):
         session_id = None
 
         final_url = '{}:{}{}'.format(
-            oscar_webpay_settings.WEBPAY_RETURN_IP_ADDRESS,
+            oscar_webpay_settings.WEBPAY_RETURN_ADDRESS,
             oscar_webpay_settings.WEBPAY_RETURN_PORT,
             reverse(final_url_name)
         )
 
         return_url = '{}:{}{}'.format(
-            oscar_webpay_settings.WEBPAY_RETURN_IP_ADDRESS,
+            oscar_webpay_settings.WEBPAY_RETURN_ADDRESS,
             oscar_webpay_settings.WEBPAY_RETURN_PORT,
             reverse(return_url_name)
         )

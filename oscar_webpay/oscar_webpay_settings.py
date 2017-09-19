@@ -3,6 +3,7 @@ import os
 
 from django.conf import settings
 from django.conf import LazyObject
+from django.contrib.sites.models import Site
 from django.utils.translation import ugettext_lazy as _
 
 
@@ -26,7 +27,18 @@ class OscarWebpaySettings(object):
         # status for such order.
         self.ORDER_STATUS_BEFORE_PAYMENT = getattr(settings, 'ORDER_STATUS_BEFORE_PAYMENT', _(u"Pending payment"))
 
-        self.WEBPAY_RETURN_IP_ADDRESS = getattr(settings, 'WEBPAY_RETURN_IP_ADDRESS', '127.0.0.1')
+        # If the following settings is not set. We use the SITE_ID in order to find the site that
+        # it is being used.
+        domain = '127.0.0.1'
+        try:
+            site = Site.objects.get(id=settings.SITE_ID)
+        except Exception:
+            pass
+        else:
+            domain = site.domain
+
+        self.WEBPAY_RETURN_PROTOCOL = getattr(settings, 'WEBPAY_RETURN_PROTOCOL', 'https')
+        self.WEBPAY_RETURN_ADDRESS = getattr(settings, 'WEBPAY_RETURN_ADDRESS', '{}://{}'.format(self.WEBPAY_RETURN_PROTOCOL, domain))
         self.WEBPAY_RETURN_PORT = getattr(settings, 'WEBPAY_RETURN_PORT', 80)
         self.WEBPAY_CERT_DIR = getattr(settings, 'WEBPAY_CERT_DIR', os.path.join(settings.BASE_DIR,
                                                                                  'webpay_certificates'))

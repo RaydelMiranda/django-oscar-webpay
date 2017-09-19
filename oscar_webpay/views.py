@@ -293,12 +293,28 @@ class WebPayCancel(View):
 
 
 @method_decorator(csrf_exempt, name='dispatch')
-class WebPayEndRedirect(RedirectView):
+class WebPayEndRedirect(CheckoutSessionMixin, RedirectView):
 
     def get_redirect_url(self, *args, **kwargs):
         if self.request.POST.get('TBK_TOKEN', False):
             msg = _(u"Transaction canceled by cardholder")
             messages.info(self.request, msg)
+
+            try:
+                basket_id = self.checkout_session.get_submitted_basket_id()
+                fzn_basket = Basket._default_manager.get(pk=basket_id)
+            except Basket.DoesNotExist:
+                # Strange place.  The previous basket stored in the session does
+                # not exist.
+                pass
+            else:
+                fzn_basket.thaw()
+                if self.request.basket.id != fzn_basket.id:
+                    fzn_basket.merge(self.request.basket)
+                    # Use same strategy as current request basket
+                    fzn_basket.strategy = self.request.basket.strategy
+                    self.request.basket = fzn_basket
+
             return reverse("webpay-fail", args=(self.request.session['order_number'], msg))
         else:
             return reverse('webpay-txns')
