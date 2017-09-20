@@ -60,6 +60,7 @@ Applicator = get_class('offer.applicator', 'Applicator')
 
 
 logger = logging.getLogger('oscar_webpay')
+logger_internal = logging.getLogger('oscar_webpay_internal')
 
 
 class WebPayRedirectView(CheckoutSessionMixin, RedirectView):
@@ -104,6 +105,7 @@ class WebPayRedirectView(CheckoutSessionMixin, RedirectView):
         except Exception, unknown:
             messages.error(self.request, six.text_type(unknown))
             logger.error(six.text_type(unknown))
+            logger_internal.error(six.text_type(unknown))
             return reverse("basket:summary")
         else:
             if response['token'] and response['url']:
@@ -186,6 +188,7 @@ class WebPayPaymentSuccessView(PaymentDetailsView):
         except Exception as unknown_error:
             # TODO: write a good logic here to handle all the 328 possible exceptions
             logger.error(six.text_type(unknown_error))
+            logger_internal.error(six.text_type(unknown_error))
             messages.error(self.request, generic_error_message)
             raise PaymentError(unknown_error)
 

@@ -33,6 +33,7 @@ from wsse.exceptions import  SignatureVerificationFailed
 from logging import getLogger
 
 logger = getLogger('oscar_webpay.transactions')
+logger_internal = getLogger('oscar_webpay.transactions_internal')
 
 
 class Dictionaries():
@@ -73,6 +74,8 @@ class WebpayNormal():
             {}
             """.format('='*100, client.last_sent(), '='*100, client.last_received())
         logger.info(msg)
+        logger_internal.info(msg)
+
 
     """
 	initTransaction
