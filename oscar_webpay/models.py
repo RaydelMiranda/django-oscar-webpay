@@ -93,6 +93,11 @@ class WebPaySource(CoreSource):
                 reference = txn[2]
                 self._create_transaction(*txn, webpay_transaction_data=self.deferred_txns_webpay_data[reference])
 
+        # After save, you must add transactions again.
+        # Otherwise each time you call save, you will be saving ALL the transactions, even if you save them already.
+        self.deferred_txns_webpay_data = None
+        WebPayTransaction.deferred_txns = None
+
     def create_deferred_transaction(self, txn_type, amount, reference=None,
                                     status=None, token=None, buy_order=None, commerce_code=None,
                                     installments_amount=None, currency=None, auth_code=None, card_number=None,

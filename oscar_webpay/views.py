@@ -299,6 +299,7 @@ class WebPayCancel(View):
 class WebPayEndRedirect(CheckoutSessionMixin, RedirectView):
 
     def get_redirect_url(self, *args, **kwargs):
+
         if self.request.POST.get('TBK_TOKEN', False):
             msg = _(u"Transaction canceled by cardholder")
             messages.info(self.request, msg)
@@ -319,8 +320,13 @@ class WebPayEndRedirect(CheckoutSessionMixin, RedirectView):
                     self.request.basket = fzn_basket
 
             return reverse("webpay-fail", args=(self.request.session['order_number'], msg))
-        else:
+
+        if self.request.POST.get('token_ws', False):
+            # We are coming from the voucher page.
             return reverse('webpay-txns')
+        else:
+            return reverse("webpay-fail", args=(self.request.session['order_number'],
+                                                _(u'Some thing went wrong, try the payment again')))
 
 
 @method_decorator(csrf_exempt, name='dispatch')
