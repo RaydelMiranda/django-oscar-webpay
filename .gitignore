@@ -1,0 +1,4 @@
+/.idea/
+/dist/
+/django_oscar_webpay.egg-info/
+*.rdb
