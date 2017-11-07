@@ -1,2 +1,4 @@
-suds==0.4
+django
+django-oscar
+suds-jurko==0.6
 py-wsse==0.1

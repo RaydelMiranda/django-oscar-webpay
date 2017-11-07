@@ -67,5 +67,5 @@ setup(
 
     include_package_data=True,
 
-    install_requires=['suds==0.4', 'py-wsse==0.1'],
+    install_requires=['suds-jurko', 'py-wsse==0.1'],
 )
