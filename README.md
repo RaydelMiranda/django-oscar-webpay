@@ -85,6 +85,9 @@ url(r'^dashboard/webpay/', include(webpay_dashboard.urls))
 Modifying dependencies
 ----------------------
 
+Using now jurko-suds. Thanks to **pedroburon** for the recomendation.
+
+
 If you are experiencing some problems getting this to work properly, try to modify some dependencies according to this:
 
 [TransbankDevelopers](http://www.transbankdevelopers.cl/?m=api "Tbk. Developers")
