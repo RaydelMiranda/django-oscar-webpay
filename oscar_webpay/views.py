@@ -250,7 +250,7 @@ class WebPayPaymentSuccessView(PaymentDetailsView):
             'webpay_buy_order': confirmed_transaction.buyOrder,
             'webpay_accounting_date': confirmed_transaction.accountingDate,
             'webpay_transaction_date': confirmed_transaction.transactionDate,
-            'webpay_VCI': confirmed_transaction.VCI,
+            'webpay_VCI': getattr(confirmed_transaction, 'VCI', None),
             'webpay_url_redirection': confirmed_transaction.urlRedirection,
             # TypeTransactionResultOutput.detailOuput
             # -------------------------------------------
