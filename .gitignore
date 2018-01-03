@@ -1,2 +1,4 @@
+*.pyc
 /.idea/
+/build/
 /django_oscar_webpay.egg-info/
