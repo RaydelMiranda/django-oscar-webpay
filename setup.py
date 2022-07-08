@@ -59,5 +59,5 @@ setup(
     # simple. Or you can use find_packages().
     packages=['oscar_webpay', 'oscar_webpay.certificates', 'oscar_webpay.libwebpay'],
 
-    install_requires=['suds==0.4', 'py-wsse==0.1'],
+    install_requires=['suds==1.0.0', 'py-wsse==0.1'],
 )
